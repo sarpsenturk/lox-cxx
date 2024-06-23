@@ -11,6 +11,8 @@ find_package(fmt CONFIG REQUIRED)
 add_library(
         lox
         src/lox.h src/lox.cpp
+        src/source_location.h src/source_location.cpp
+        src/error.h src/error.cpp
 )
 target_compile_features(lox PUBLIC cxx_std_20)
 target_include_directories(lox PUBLIC src)
