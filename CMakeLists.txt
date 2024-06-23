@@ -6,12 +6,15 @@ project(
         DESCRIPTION "A modern C++ implementation of the Lox programming language"
 )
 
+find_package(fmt CONFIG REQUIRED)
+
 add_library(
         lox
         src/lox.h src/lox.cpp
 )
 target_compile_features(lox PUBLIC cxx_std_20)
 target_include_directories(lox PUBLIC src)
+target_link_libraries(lox PUBLIC fmt::fmt)
 
 add_executable(lox-cxx src/main.cpp)
 target_link_libraries(lox-cxx lox)
