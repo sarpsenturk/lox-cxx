@@ -41,6 +41,8 @@ namespace lox
             const auto tokens = lexer.tokenize();
             auto parser = Parser{tokens};
             const auto ast = parser.parse();
+            const auto result = interpreter_.evaluate(*ast);
+            fmt::println("{}\n", result->to_string());
         } catch (const LoxError& error) {
             fmt::println(stderr, "{}", error.what());
         }

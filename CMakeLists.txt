@@ -14,9 +14,15 @@ add_library(
         src/ast.h src/ast.cpp
         src/error.h src/error.cpp
         src/lexer.h src/lexer.cpp
+        src/lox_boolean.h src/lox_boolean.cpp
+        src/lox_nil.h src/lox_nil.cpp
+        src/lox_number.h src/lox_number.cpp
+        src/lox_object.h src/lox_object.cpp
+        src/lox_string.h src/lox_string.cpp
         src/parser.h src/parser.cpp
         src/source_location.h src/source_location.cpp
         src/token.h src/token.cpp
+        src/tree_walk.h src/tree_walk.cpp
 )
 target_compile_features(lox PUBLIC cxx_std_20)
 target_include_directories(lox PUBLIC src)

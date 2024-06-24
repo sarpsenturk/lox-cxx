@@ -25,7 +25,7 @@ namespace lox
     ExprPtr Parser::equality()
     {
         auto expr = comparison();
-        while (consume_expected({{TokenType::Bang, TokenType::BangEqual}})) {
+        while (consume_expected({{TokenType::BangEqual, TokenType::EqualEqual}})) {
             auto op = last_token();
             expr = std::make_unique<BinaryExpr>(std::move(expr), op, comparison());
         }
@@ -86,7 +86,7 @@ namespace lox
         }
         if (consume_expected(TokenType::String)) {
             auto string = last_token();
-            return std::make_unique<LiteralExpr>(string, std::string{string.lexeme});
+            return std::make_unique<LiteralExpr>(string, std::string{string.lexeme.substr(1, string.lexeme.length() - 2)});
         }
         if (consume_expected({{TokenType::True, TokenType::False}})) {
             auto boolean = last_token();
