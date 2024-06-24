@@ -13,6 +13,8 @@ add_library(
         src/lox.h src/lox.cpp
         src/source_location.h src/source_location.cpp
         src/error.h src/error.cpp
+        src/lexer.h src/lexer.cpp
+        src/token.h src/token.cpp
 )
 target_compile_features(lox PUBLIC cxx_std_20)
 target_include_directories(lox PUBLIC src)
