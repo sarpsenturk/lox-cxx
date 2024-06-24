@@ -51,6 +51,8 @@ namespace lox
 
         Super,
         Nil,
+
+        Print,
     };
 
     struct Token {

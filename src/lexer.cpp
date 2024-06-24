@@ -22,6 +22,7 @@ namespace lox
         std::make_pair("while"sv, TokenType::While),
         std::make_pair("super"sv, TokenType::Super),
         std::make_pair("nil"sv, TokenType::Nil),
+        std::make_pair("print"sv, TokenType::Print),
     };
 
     Lexer::Lexer(std::string_view source)
@@ -104,6 +105,8 @@ namespace lox
                     throw_error("Unexpected character");
             }
         }
+        start_position_ = current_position_;
+        start_location_ = current_location_;
         return make_token(TokenType::Eof);
     }
 
@@ -112,10 +115,10 @@ namespace lox
         std::vector<Token> tokens;
         do {
             auto token = tokenize_next();
+            tokens.push_back(token);
             if (token.type == TokenType::Eof) {
                 break;
             }
-            tokens.push_back(token);
         } while (true);
         return tokens;
     }
