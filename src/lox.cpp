@@ -2,6 +2,7 @@
 
 #include "error.h"
 #include "lexer.h"
+#include "parser.h"
 
 #include <cstdio>
 #include <string>
@@ -38,10 +39,8 @@ namespace lox
         try {
             auto lexer = Lexer{source};
             const auto tokens = lexer.tokenize();
-            for (const auto& token : tokens) {
-                fmt::println("Token{{ type: {}, lexeme: {}, location: {}:{} }}",
-                             format_as(token.type), token.lexeme, token.location.line, token.location.column);
-            }
+            auto parser = Parser{tokens};
+            const auto ast = parser.parse();
         } catch (const LoxError& error) {
             fmt::println(stderr, "{}", error.what());
         }

@@ -11,9 +11,11 @@ find_package(fmt CONFIG REQUIRED)
 add_library(
         lox
         src/lox.h src/lox.cpp
-        src/source_location.h src/source_location.cpp
+        src/ast.h src/ast.cpp
         src/error.h src/error.cpp
         src/lexer.h src/lexer.cpp
+        src/parser.h src/parser.cpp
+        src/source_location.h src/source_location.cpp
         src/token.h src/token.cpp
 )
 target_compile_features(lox PUBLIC cxx_std_20)

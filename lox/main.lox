@@ -1,19 +1,2 @@
-// This is a comment and is ignored
-
-// These are single character tokens
-+-*/(){};,.
-
-// These are multi character tokens
-! != = == > >= < <=
-
-// These are keywords
-and or true false var fun class if else for while super nil
-
-// These are numbers
-0 123 3.14159265359
-
-// These are strings
-"" "this is a string"
-
-// These are identifiers
-identifier identifier identifier42 identifier_ _identifier
+// This is a simple binary expression to be parsed
+-123 + (50 - 5) * 45.67
