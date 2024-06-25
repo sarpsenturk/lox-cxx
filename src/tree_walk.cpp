@@ -136,7 +136,7 @@ namespace lox
                 }
                 break;
             default:
-                assert(false && "unhanled/invalid unary operator");
+                assert(false && "unhandled/invalid unary operator");
         }
 
         if (expr_result_ == nullptr) {
