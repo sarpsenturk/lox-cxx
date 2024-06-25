@@ -5,6 +5,7 @@
 #include <memory>
 #include <string>
 #include <variant>
+#include <vector>
 
 namespace lox
 {
@@ -153,6 +154,7 @@ namespace lox
     class ExprStmt;
     class PrintStmt;
     class VarDeclStmt;
+    class BlockStmt;
 
     class StmtVisitor
     {
@@ -163,6 +165,7 @@ namespace lox
         virtual void visit(const ExprStmt& stmt) = 0;
         virtual void visit(const PrintStmt& stmt) = 0;
         virtual void visit(const VarDeclStmt& stmt) = 0;
+        virtual void visit(const BlockStmt& stmt) = 0;
 
     protected:
         StmtVisitor(const StmtVisitor&) = default;
@@ -227,5 +230,18 @@ namespace lox
     private:
         Token identifier_;
         ExprPtr initializer_;
+    };
+
+    class BlockStmt : public Stmt
+    {
+    public:
+        explicit BlockStmt(std::vector<StmtPtr> statements);
+
+        void accept(StmtVisitor& visitor) const override { visitor.visit(*this); }
+
+        [[nodiscard]] auto& statements() const { return statements_; }
+
+    private:
+        std::vector<StmtPtr> statements_;
     };
 } // namespace lox

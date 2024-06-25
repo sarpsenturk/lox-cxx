@@ -52,4 +52,9 @@ namespace lox
         , initializer_(std::move(initializer))
     {
     }
+
+    BlockStmt::BlockStmt(std::vector<StmtPtr> statements)
+        : statements_(std::move(statements))
+    {
+    }
 } // namespace lox

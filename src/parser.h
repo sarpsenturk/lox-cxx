@@ -25,6 +25,7 @@ namespace lox
         StmtPtr var_decl();
         StmtPtr statement();
         StmtPtr print_stmt();
+        StmtPtr block_stmt();
         StmtPtr expr_stmt();
         ExprPtr expression();
         ExprPtr assignment();

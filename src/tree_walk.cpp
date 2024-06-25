@@ -214,4 +214,22 @@ namespace lox
         auto value = stmt.initializer() ? evaluate(*stmt.initializer()) : std::make_shared<LoxNil>(stmt.identifier());
         environment_.define(stmt.identifier().lexeme, std::move(value));
     }
+
+    void TreeWalkInterpreter::visit(const BlockStmt& stmt)
+    {
+        Environment enclosing = std::move(environment_);
+        environment_ = Environment{&enclosing};
+
+        // TODO: This try catch is very ugly.
+        //  Figure out a better way to do this with RAII
+        try {
+            for (const auto& statement : stmt.statements()) {
+                execute(*statement);
+            }
+        } catch (...) {
+            environment_ = std::move(enclosing);
+            throw;
+        }
+        environment_ = std::move(enclosing);
+    }
 } // namespace lox

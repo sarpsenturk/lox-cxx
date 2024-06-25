@@ -62,6 +62,9 @@ namespace lox
         if (consume_expected(TokenType::Print)) {
             return print_stmt();
         }
+        if (consume_expected(TokenType::LeftBrace)) {
+            return block_stmt();
+        }
         return expr_stmt();
     }
 
@@ -72,6 +75,18 @@ namespace lox
             panic("expected ';' after expression");
         }
         return std::make_unique<PrintStmt>(std::move(expr));
+    }
+
+    StmtPtr Parser::block_stmt()
+    {
+        std::vector<StmtPtr> statements;
+        while (peek().type != TokenType::RightBrace && !is_eof()) {
+            statements.push_back(declaration());
+        }
+        if (!consume_expected(TokenType::RightBrace)) {
+            panic("expected closing '}' after block");
+        }
+        return std::make_unique<BlockStmt>(std::move(statements));
     }
 
     StmtPtr Parser::expr_stmt()
