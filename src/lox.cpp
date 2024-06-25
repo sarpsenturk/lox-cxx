@@ -39,10 +39,19 @@ namespace lox
         try {
             auto lexer = Lexer{source};
             const auto tokens = lexer.tokenize();
+
             auto parser = Parser{tokens};
-            const auto ast = parser.parse();
-            const auto result = interpreter_.evaluate(*ast);
-            fmt::println("{}\n", result->to_string());
+            const auto parse_result = parser.parse();
+            if (!parse_result.has_value()) {
+                const auto& errors = parse_result.error();
+                for (const auto& error : errors) {
+                    fmt::println(stderr, "{}", error.what());
+                }
+                return;
+            }
+
+            const auto& statements = *parse_result;
+            interpreter_.execute(statements);
         } catch (const LoxError& error) {
             fmt::println(stderr, "{}", error.what());
         }

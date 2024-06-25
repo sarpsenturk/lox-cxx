@@ -12,14 +12,94 @@ namespace lox
     {
     }
 
-    ExprPtr Parser::parse()
+    ParseResult Parser::parse()
     {
-        return expression();
+        std::vector<StmtPtr> statements;
+        std::vector<LoxError> errors;
+        while (!is_eof()) {
+            try {
+                statements.push_back(declaration());
+            } catch (LoxError&& err) {
+                errors.push_back(std::move(err));
+                synchronize();
+            }
+        }
+
+        if (!errors.empty()) {
+            return tl::unexpected(std::move(errors));
+        }
+        return ParseResult{std::move(statements)};
+    }
+
+    StmtPtr Parser::declaration()
+    {
+        if (consume_expected(TokenType::Var)) {
+            return var_decl();
+        }
+        return statement();
+    }
+
+    StmtPtr Parser::var_decl()
+    {
+        auto identifier = consume_expected(TokenType::Identifier);
+        if (!identifier) {
+            panic("expected variable name");
+        }
+
+        ExprPtr initializer = nullptr;
+        if (consume_expected(TokenType::Equal)) {
+            initializer = expression();
+        }
+
+        if (!consume_expected(TokenType::Semicolon)) {
+            panic("expected ';' after variable declaration");
+        }
+        return std::make_unique<VarDeclStmt>(*identifier, std::move(initializer));
+    }
+
+    StmtPtr Parser::statement()
+    {
+        if (consume_expected(TokenType::Print)) {
+            return print_stmt();
+        }
+        return expr_stmt();
+    }
+
+    StmtPtr Parser::print_stmt()
+    {
+        auto expr = expression();
+        if (!consume_expected(TokenType::Semicolon)) {
+            panic("expected ';' after expression");
+        }
+        return std::make_unique<PrintStmt>(std::move(expr));
+    }
+
+    StmtPtr Parser::expr_stmt()
+    {
+        auto expr = expression();
+        if (!consume_expected(TokenType::Semicolon)) {
+            panic("expected ';' after expression");
+        }
+        return std::make_unique<ExprStmt>(std::move(expr));
     }
 
     ExprPtr Parser::expression()
     {
-        return equality();
+        return assignment();
+    }
+
+    ExprPtr Parser::assignment()
+    {
+        auto expr = equality();
+        if (consume_expected(TokenType::Equal)) {
+            auto value = assignment();
+            if (const auto* var_expr = dynamic_cast<const VarExpr*>(expr.get())) {
+                auto name = var_expr->identifier();
+                return std::make_unique<AssignmentExpr>(name, std::move(value));
+            }
+            panic("invalid assignment target");
+        }
+        return expr;
     }
 
     ExprPtr Parser::equality()
@@ -103,12 +183,15 @@ namespace lox
             }
             return std::make_unique<ParenExpr>(std::move(expr));
         }
+        if (auto identifier = consume_expected(TokenType::Identifier)) {
+            return std::make_unique<VarExpr>(*identifier);
+        }
         panic("expected expression");
     }
 
     bool Parser::is_eof() const
     {
-        return current_token_ >= tokens_.size();
+        return peek().type == TokenType::Eof;
     }
 
     Token Parser::consume()
@@ -124,23 +207,22 @@ namespace lox
         return tokens_[current_token_];
     }
 
-    bool Parser::consume_expected(TokenType expected)
+    tl::expected<Token, Token> Parser::consume_expected(TokenType expected)
     {
         if (is_eof() || peek().type != expected) {
-            return false;
+            return tl::unexpected(peek());
         }
-        consume();
-        return true;
+        return consume();
     }
 
-    bool Parser::consume_expected(std::span<const TokenType> expected)
+    tl::expected<Token, Token> Parser::consume_expected(std::span<const TokenType> expected)
     {
         for (auto type : expected) {
-            if (consume_expected(type)) {
-                return true;
+            if (auto expected = consume_expected(type)) {
+                return expected;
             }
         }
-        return false;
+        return tl::unexpected(peek());
     }
 
     Token Parser::last_token() const
@@ -151,5 +233,30 @@ namespace lox
     void Parser::panic(const char* msg) const
     {
         throw LoxError(msg, peek().location);
+    }
+
+    void Parser::synchronize()
+    {
+        consume();
+
+        while (!is_eof()) {
+            if (last_token().type == TokenType::Semicolon) {
+                return;
+            }
+
+            switch (peek().type) {
+                case TokenType::Class:
+                case TokenType::Fun:
+                case TokenType::Var:
+                case TokenType::For:
+                case TokenType::If:
+                case TokenType::While:
+                case TokenType::Print:
+                    return;
+                default:
+                    break;
+            }
+            consume();
+        }
     }
 } // namespace lox

@@ -25,4 +25,31 @@ namespace lox
         , value_(std::move(value))
     {
     }
+
+    VarExpr::VarExpr(Token identifier)
+        : identifier_(identifier)
+    {
+    }
+
+    AssignmentExpr::AssignmentExpr(Token identifier, ExprPtr value)
+        : identifier_(identifier)
+        , value_(std::move(value))
+    {
+    }
+
+    ExprStmt::ExprStmt(ExprPtr expr)
+        : expr_(std::move(expr))
+    {
+    }
+
+    PrintStmt::PrintStmt(ExprPtr expr)
+        : expr_(std::move(expr))
+    {
+    }
+
+    VarDeclStmt::VarDeclStmt(Token identifier, ExprPtr initializer)
+        : identifier_(identifier)
+        , initializer_(std::move(initializer))
+    {
+    }
 } // namespace lox

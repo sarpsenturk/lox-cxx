@@ -1,21 +1,33 @@
 #pragma once
 
 #include "ast.h"
+#include "error.h"
 #include "token.h"
 
+#include <tl/expected.hpp>
+
 #include <span>
+#include <vector>
 
 namespace lox
 {
+    using ParseResult = tl::expected<std::vector<StmtPtr>, std::vector<LoxError>>;
+
     class Parser
     {
     public:
         explicit Parser(std::span<const Token> tokens);
 
-        ExprPtr parse();
+        ParseResult parse();
 
     private:
+        StmtPtr declaration();
+        StmtPtr var_decl();
+        StmtPtr statement();
+        StmtPtr print_stmt();
+        StmtPtr expr_stmt();
         ExprPtr expression();
+        ExprPtr assignment();
         ExprPtr equality();
         ExprPtr comparison();
         ExprPtr additive();
@@ -27,12 +39,13 @@ namespace lox
 
         Token consume();
         Token peek() const;
-        bool consume_expected(TokenType expected);
-        bool consume_expected(std::span<const TokenType> expected);
+        tl::expected<Token, Token> consume_expected(TokenType expected);
+        tl::expected<Token, Token> consume_expected(std::span<const TokenType> expected);
 
         Token last_token() const;
 
         [[noreturn]] void panic(const char* msg) const;
+        void synchronize();
 
         std::span<const Token> tokens_;
         std::size_t current_token_ = 0;

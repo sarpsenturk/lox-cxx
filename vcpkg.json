@@ -2,6 +2,7 @@
   "name": "lox-cxx",
   "version-semver": "0.1.0",
   "dependencies": [
-    "fmt"
+    "fmt",
+    "tl-expected"
   ]
 }

@@ -12,6 +12,8 @@ namespace lox
     class UnaryExpr;
     class ParenExpr;
     class LiteralExpr;
+    class VarExpr;
+    class AssignmentExpr;
 
     class ExprVisitor
     {
@@ -23,6 +25,8 @@ namespace lox
         virtual void visit(const UnaryExpr& expr) = 0;
         virtual void visit(const ParenExpr& expr) = 0;
         virtual void visit(const LiteralExpr& expr) = 0;
+        virtual void visit(const VarExpr& expr) = 0;
+        virtual void visit(const AssignmentExpr& expr) = 0;
 
     protected:
         ExprVisitor(const ExprVisitor&) = default;
@@ -116,5 +120,112 @@ namespace lox
     private:
         Token literal_;
         LiteralValue value_;
+    };
+
+    class VarExpr : public Expr
+    {
+    public:
+        explicit VarExpr(Token identifier);
+
+        void accept(ExprVisitor& visitor) const override { return visitor.visit(*this); }
+
+        [[nodiscard]] auto& identifier() const { return identifier_; }
+
+    private:
+        Token identifier_;
+    };
+
+    class AssignmentExpr : public Expr
+    {
+    public:
+        AssignmentExpr(Token identifier, ExprPtr value);
+
+        void accept(ExprVisitor& visitor) const override { return visitor.visit(*this); }
+
+        [[nodiscard]] auto& identifier() const { return identifier_; }
+        [[nodiscard]] auto& value() const { return *value_; }
+
+    private:
+        Token identifier_;
+        ExprPtr value_;
+    };
+
+    class ExprStmt;
+    class PrintStmt;
+    class VarDeclStmt;
+
+    class StmtVisitor
+    {
+    public:
+        StmtVisitor() = default;
+        virtual ~StmtVisitor() = default;
+
+        virtual void visit(const ExprStmt& stmt) = 0;
+        virtual void visit(const PrintStmt& stmt) = 0;
+        virtual void visit(const VarDeclStmt& stmt) = 0;
+
+    protected:
+        StmtVisitor(const StmtVisitor&) = default;
+        StmtVisitor(StmtVisitor&&) = default;
+        StmtVisitor& operator=(const StmtVisitor&) = default;
+        StmtVisitor& operator=(StmtVisitor&&) = default;
+    };
+
+    class Stmt
+    {
+    public:
+        Stmt() = default;
+        virtual ~Stmt() = default;
+
+        virtual void accept(StmtVisitor& visitor) const = 0;
+
+    protected:
+        Stmt(const Stmt&) = default;
+        Stmt(Stmt&&) = default;
+        Stmt& operator=(const Stmt&) = default;
+        Stmt& operator=(Stmt&&) = default;
+    };
+
+    using StmtPtr = std::unique_ptr<Stmt>;
+
+    class ExprStmt : public Stmt
+    {
+    public:
+        explicit ExprStmt(ExprPtr expr);
+
+        void accept(StmtVisitor& visitor) const override { visitor.visit(*this); }
+
+        [[nodiscard]] auto& expr() const { return *expr_; }
+
+    private:
+        ExprPtr expr_;
+    };
+
+    class PrintStmt : public Stmt
+    {
+    public:
+        explicit PrintStmt(ExprPtr expr);
+
+        void accept(StmtVisitor& visitor) const override { visitor.visit(*this); }
+
+        [[nodiscard]] auto& expr() const { return *expr_; }
+
+    private:
+        ExprPtr expr_;
+    };
+
+    class VarDeclStmt : public Stmt
+    {
+    public:
+        VarDeclStmt(Token identifier, ExprPtr initializer);
+
+        void accept(StmtVisitor& visitor) const override { visitor.visit(*this); }
+
+        [[nodiscard]] auto& identifier() const { return identifier_; }
+        [[nodiscard]] auto* initializer() const { return initializer_.get(); }
+
+    private:
+        Token identifier_;
+        ExprPtr initializer_;
     };
 } // namespace lox

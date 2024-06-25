@@ -65,10 +65,22 @@ namespace lox
         }
     } // namespace
 
-    std::unique_ptr<LoxObject> TreeWalkInterpreter::evaluate(const Expr& expr)
+    std::shared_ptr<LoxObject> TreeWalkInterpreter::evaluate(const Expr& expr)
     {
         expr.accept(*this);
-        return std::move(expr_result_);
+        return expr_result_;
+    }
+
+    void TreeWalkInterpreter::execute(const Stmt& stmt)
+    {
+        stmt.accept(*this);
+    }
+
+    void TreeWalkInterpreter::execute(std::span<const StmtPtr> statements)
+    {
+        for (const auto& stmt : statements) {
+            execute(*stmt);
+        }
     }
 
     void TreeWalkInterpreter::visit(const BinaryExpr& expr)
@@ -90,32 +102,32 @@ namespace lox
                 break;
             case TokenType::Greater:
                 if (auto result = lhs->cmp_greater(rhs.get())) {
-                    expr_result_ = std::make_unique<LoxBoolean>(expr.op(), *result);
+                    expr_result_ = std::make_shared<LoxBoolean>(expr.op(), *result);
                 }
                 break;
             case TokenType::GreaterEqual:
                 if (auto result = lhs->cmp_greater_equal(rhs.get())) {
-                    expr_result_ = std::make_unique<LoxBoolean>(expr.op(), *result);
+                    expr_result_ = std::make_shared<LoxBoolean>(expr.op(), *result);
                 }
                 break;
             case TokenType::Less:
                 if (auto result = lhs->cmp_less(rhs.get())) {
-                    expr_result_ = std::make_unique<LoxBoolean>(expr.op(), *result);
+                    expr_result_ = std::make_shared<LoxBoolean>(expr.op(), *result);
                 }
                 break;
             case TokenType::LessEqual:
                 if (auto result = lhs->cmp_less_equal(rhs.get())) {
-                    expr_result_ = std::make_unique<LoxBoolean>(expr.op(), *result);
+                    expr_result_ = std::make_shared<LoxBoolean>(expr.op(), *result);
                 }
                 break;
             case TokenType::BangEqual:
                 if (auto result = lhs->cmp_equal(rhs.get())) {
-                    expr_result_ = std::make_unique<LoxBoolean>(expr.op(), !(*result));
+                    expr_result_ = std::make_shared<LoxBoolean>(expr.op(), !(*result));
                 }
                 break;
             case TokenType::EqualEqual:
                 if (auto result = lhs->cmp_equal(rhs.get())) {
-                    expr_result_ = std::make_unique<LoxBoolean>(expr.op(), *result);
+                    expr_result_ = std::make_shared<LoxBoolean>(expr.op(), *result);
                 }
                 break;
             default:
@@ -135,7 +147,7 @@ namespace lox
                 expr_result_ = value->negate();
                 break;
             case TokenType::Bang:
-                expr_result_ = std::make_unique<LoxBoolean>(expr.op(), !value->is_truthy());
+                expr_result_ = std::make_shared<LoxBoolean>(expr.op(), !value->is_truthy());
                 break;
             default:
                 assert(false && "unhandled/invalid unary operator");
@@ -153,18 +165,53 @@ namespace lox
 
     void TreeWalkInterpreter::visit(const LiteralExpr& expr)
     {
-        auto literal_visitor = [token = expr.literal_token()](auto&& literal) -> std::unique_ptr<LoxObject> {
+        auto literal_visitor = [token = expr.literal_token()](auto&& literal) -> std::shared_ptr<LoxObject> {
             using T = std::remove_cvref_t<decltype(literal)>;
             if constexpr (std::is_same_v<T, NilLiteral>) {
-                return std::make_unique<LoxNil>(token);
+                return std::make_shared<LoxNil>(token);
             } else if constexpr (std::is_same_v<T, NumberLiteral>) {
-                return std::make_unique<LoxNumber>(token, literal);
+                return std::make_shared<LoxNumber>(token, literal);
             } else if constexpr (std::is_same_v<T, StringLiteral>) {
-                return std::make_unique<LoxString>(token, literal);
+                return std::make_shared<LoxString>(token, literal);
             } else if constexpr (std::is_same_v<T, BooleanLiteral>) {
-                return std::make_unique<LoxBoolean>(token, literal);
+                return std::make_shared<LoxBoolean>(token, literal);
             }
         };
         expr_result_ = std::visit(literal_visitor, expr.literal_value());
+    }
+
+    void TreeWalkInterpreter::visit(const VarExpr& expr)
+    {
+        if (auto value = environment_.get(expr.identifier().lexeme)) {
+            expr_result_ = std::move(value);
+        } else {
+            throw LoxError(fmt::format("undefined variable '{}'", expr.identifier().lexeme), expr.identifier().location);
+        }
+    }
+
+    void TreeWalkInterpreter::visit(const AssignmentExpr& expr)
+    {
+        auto value = evaluate(expr.value());
+        if (!environment_.assign(expr.identifier().lexeme, std::move(value))) {
+            throw LoxError(fmt::format("assigning to undefined variable '{}'", expr.identifier().lexeme), expr.identifier().location);
+        }
+    }
+
+    void TreeWalkInterpreter::visit(const ExprStmt& stmt)
+    {
+        evaluate(stmt.expr());
+        expr_result_ = nullptr;
+    }
+
+    void TreeWalkInterpreter::visit(const PrintStmt& stmt)
+    {
+        auto value = evaluate(stmt.expr());
+        fmt::println("{}", value->to_string());
+    }
+
+    void TreeWalkInterpreter::visit(const VarDeclStmt& stmt)
+    {
+        auto value = stmt.initializer() ? evaluate(*stmt.initializer()) : std::make_shared<LoxNil>(stmt.identifier());
+        environment_.define(stmt.identifier().lexeme, std::move(value));
     }
 } // namespace lox

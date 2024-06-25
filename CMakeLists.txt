@@ -6,12 +6,11 @@ project(
         DESCRIPTION "A modern C++ implementation of the Lox programming language"
 )
 
-find_package(fmt CONFIG REQUIRED)
-
 add_library(
         lox
         src/lox.h src/lox.cpp
         src/ast.h src/ast.cpp
+        src/environment.h src/environment.cpp
         src/error.h src/error.cpp
         src/lexer.h src/lexer.cpp
         src/lox_boolean.h src/lox_boolean.cpp
@@ -26,7 +25,10 @@ add_library(
 )
 target_compile_features(lox PUBLIC cxx_std_20)
 target_include_directories(lox PUBLIC src)
-target_link_libraries(lox PUBLIC fmt::fmt)
+
+find_package(fmt CONFIG REQUIRED)
+find_package(tl-expected CONFIG REQUIRED)
+target_link_libraries(lox PUBLIC fmt::fmt tl::expected)
 
 add_executable(lox-cxx src/main.cpp)
 target_link_libraries(lox-cxx lox)
