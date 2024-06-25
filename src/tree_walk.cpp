@@ -197,6 +197,26 @@ namespace lox
         }
     }
 
+    void TreeWalkInterpreter::visit(const LogicExpr& expr)
+    {
+        auto lhs = evaluate(expr.lhs());
+        if (expr.op().type == TokenType::Or) {
+            if (lhs->is_truthy()) {
+                expr_result_ = std::move(lhs);
+            } else {
+                expr_result_ = evaluate(expr.rhs());
+            }
+        } else if (expr.op().type == TokenType::And) {
+            if (!lhs->is_truthy()) {
+                expr_result_ = std::move(lhs);
+            } else {
+                expr_result_ = evaluate(expr.rhs());
+            }
+        } else {
+            assert(false && "invalid/unhandled logical operator");
+        }
+    }
+
     void TreeWalkInterpreter::visit(const ExprStmt& stmt)
     {
         evaluate(stmt.expr());
@@ -231,5 +251,14 @@ namespace lox
             throw;
         }
         environment_ = std::move(enclosing);
+    }
+
+    void TreeWalkInterpreter::visit(const IfStmt& stmt)
+    {
+        if (evaluate(stmt.condition())->is_truthy()) {
+            execute(stmt.then_branch());
+        } else if (stmt.else_branch() != nullptr) {
+            execute(*stmt.else_branch());
+        }
     }
 } // namespace lox

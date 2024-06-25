@@ -24,11 +24,13 @@ namespace lox
         void visit(const LiteralExpr& expr) override;
         void visit(const VarExpr& expr) override;
         void visit(const AssignmentExpr& expr) override;
+        void visit(const LogicExpr& expr) override;
 
         void visit(const ExprStmt& stmt) override;
         void visit(const PrintStmt& stmt) override;
         void visit(const VarDeclStmt& stmt) override;
         void visit(const BlockStmt& stmt) override;
+        void visit(const IfStmt& stmt) override;
 
     private:
         std::shared_ptr<LoxObject> expr_result_ = nullptr;

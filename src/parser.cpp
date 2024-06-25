@@ -59,6 +59,9 @@ namespace lox
 
     StmtPtr Parser::statement()
     {
+        if (consume_expected(TokenType::If)) {
+            return if_stmt();
+        }
         if (consume_expected(TokenType::Print)) {
             return print_stmt();
         }
@@ -66,6 +69,25 @@ namespace lox
             return block_stmt();
         }
         return expr_stmt();
+    }
+
+    StmtPtr Parser::if_stmt()
+    {
+        if (!consume_expected(TokenType::LeftParen)) {
+            panic("expected '(' after if");
+        }
+        auto condition = expression();
+        if (!consume_expected(TokenType::RightParen)) {
+            panic("expected ')' after if condition");
+        }
+
+        auto then_branch = statement();
+        StmtPtr else_branch = nullptr;
+        if (consume_expected(TokenType::Else)) {
+            else_branch = statement();
+        }
+
+        return std::make_unique<IfStmt>(std::move(condition), std::move(then_branch), std::move(else_branch));
     }
 
     StmtPtr Parser::print_stmt()
@@ -105,7 +127,7 @@ namespace lox
 
     ExprPtr Parser::assignment()
     {
-        auto expr = equality();
+        auto expr = logical_or();
         if (consume_expected(TokenType::Equal)) {
             auto value = assignment();
             if (const auto* var_expr = dynamic_cast<const VarExpr*>(expr.get())) {
@@ -113,6 +135,26 @@ namespace lox
                 return std::make_unique<AssignmentExpr>(name, std::move(value));
             }
             panic("invalid assignment target");
+        }
+        return expr;
+    }
+
+    ExprPtr Parser::logical_or()
+    {
+        auto expr = logical_and();
+        while (consume_expected(TokenType::Or)) {
+            auto op = last_token();
+            expr = std::make_unique<LogicExpr>(std::move(expr), op, logical_and());
+        }
+        return expr;
+    }
+
+    ExprPtr Parser::logical_and()
+    {
+        auto expr = equality();
+        while (consume_expected(TokenType::And)) {
+            auto op = last_token();
+            expr = std::make_unique<LogicExpr>(std::move(expr), op, equality());
         }
         return expr;
     }

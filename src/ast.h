@@ -15,6 +15,7 @@ namespace lox
     class LiteralExpr;
     class VarExpr;
     class AssignmentExpr;
+    class LogicExpr;
 
     class ExprVisitor
     {
@@ -28,6 +29,7 @@ namespace lox
         virtual void visit(const LiteralExpr& expr) = 0;
         virtual void visit(const VarExpr& expr) = 0;
         virtual void visit(const AssignmentExpr& expr) = 0;
+        virtual void visit(const LogicExpr& expr) = 0;
 
     protected:
         ExprVisitor(const ExprVisitor&) = default;
@@ -151,10 +153,28 @@ namespace lox
         ExprPtr value_;
     };
 
+    class LogicExpr : public Expr
+    {
+    public:
+        LogicExpr(ExprPtr lhs, Token op, ExprPtr rhs);
+
+        void accept(ExprVisitor& visitor) const override { return visitor.visit(*this); }
+
+        [[nodiscard]] auto& lhs() const { return *lhs_; }
+        [[nodiscard]] auto& op() const { return op_; }
+        [[nodiscard]] auto& rhs() const { return *rhs_; }
+
+    private:
+        ExprPtr lhs_;
+        Token op_;
+        ExprPtr rhs_;
+    };
+
     class ExprStmt;
     class PrintStmt;
     class VarDeclStmt;
     class BlockStmt;
+    class IfStmt;
 
     class StmtVisitor
     {
@@ -166,6 +186,7 @@ namespace lox
         virtual void visit(const PrintStmt& stmt) = 0;
         virtual void visit(const VarDeclStmt& stmt) = 0;
         virtual void visit(const BlockStmt& stmt) = 0;
+        virtual void visit(const IfStmt& stmt) = 0;
 
     protected:
         StmtVisitor(const StmtVisitor&) = default;
@@ -243,5 +264,22 @@ namespace lox
 
     private:
         std::vector<StmtPtr> statements_;
+    };
+
+    class IfStmt : public Stmt
+    {
+    public:
+        IfStmt(ExprPtr condition, StmtPtr then_stmt, StmtPtr else_stmt);
+
+        void accept(StmtVisitor& visitor) const override { visitor.visit(*this); }
+
+        [[nodiscard]] auto& condition() const { return *condition_; }
+        [[nodiscard]] auto& then_branch() const { return *then_stmt_; }
+        [[nodiscard]] auto* else_branch() const { return else_stmt_.get(); }
+
+    private:
+        ExprPtr condition_;
+        StmtPtr then_stmt_;
+        StmtPtr else_stmt_;
     };
 } // namespace lox

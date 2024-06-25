@@ -37,6 +37,13 @@ namespace lox
     {
     }
 
+    LogicExpr::LogicExpr(ExprPtr lhs, Token op, ExprPtr rhs)
+        : lhs_(std::move(lhs))
+        , op_(op)
+        , rhs_(std::move(rhs))
+    {
+    }
+
     ExprStmt::ExprStmt(ExprPtr expr)
         : expr_(std::move(expr))
     {
@@ -55,6 +62,13 @@ namespace lox
 
     BlockStmt::BlockStmt(std::vector<StmtPtr> statements)
         : statements_(std::move(statements))
+    {
+    }
+
+    IfStmt::IfStmt(ExprPtr condition, StmtPtr then_stmt, StmtPtr else_stmt)
+        : condition_(std::move(condition))
+        , then_stmt_(std::move(then_stmt))
+        , else_stmt_(std::move(else_stmt))
     {
     }
 } // namespace lox

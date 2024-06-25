@@ -24,11 +24,14 @@ namespace lox
         StmtPtr declaration();
         StmtPtr var_decl();
         StmtPtr statement();
+        StmtPtr if_stmt();
         StmtPtr print_stmt();
         StmtPtr block_stmt();
         StmtPtr expr_stmt();
         ExprPtr expression();
         ExprPtr assignment();
+        ExprPtr logical_or();
+        ExprPtr logical_and();
         ExprPtr equality();
         ExprPtr comparison();
         ExprPtr additive();
