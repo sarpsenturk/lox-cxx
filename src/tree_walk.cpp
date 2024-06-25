@@ -183,7 +183,7 @@ namespace lox
 
     void TreeWalkInterpreter::visit(const VarExpr& expr)
     {
-        if (auto value = environment_.get(expr.identifier().lexeme)) {
+        if (auto value = environment_->get(expr.identifier().lexeme)) {
             expr_result_ = std::move(value);
         } else {
             throw LoxError(fmt::format("undefined variable '{}'", expr.identifier().lexeme), expr.identifier().location);
@@ -193,7 +193,7 @@ namespace lox
     void TreeWalkInterpreter::visit(const AssignmentExpr& expr)
     {
         auto value = evaluate(expr.value());
-        if (!environment_.assign(expr.identifier().lexeme, std::move(value))) {
+        if (!environment_->assign(expr.identifier().lexeme, std::move(value))) {
             throw LoxError(fmt::format("assigning to undefined variable '{}'", expr.identifier().lexeme), expr.identifier().location);
         }
     }
@@ -253,7 +253,7 @@ namespace lox
     void TreeWalkInterpreter::visit(const VarDeclStmt& stmt)
     {
         auto value = stmt.initializer() ? evaluate(*stmt.initializer()) : std::make_shared<LoxNil>(stmt.identifier());
-        environment_.define(stmt.identifier().lexeme, std::move(value));
+        environment_->define(stmt.identifier().lexeme, std::move(value));
     }
 
     void TreeWalkInterpreter::visit(const FunDeclStmt& stmt)
@@ -266,45 +266,24 @@ namespace lox
         //  With the way Lox currently invokes the TreeWalkInterprerter::execute(),
         //  this isn't a problem, however it's still bad.
         auto func = [&](const ArgList& args) {
-            Environment enclosing = std::move(environment_);
-            environment_ = Environment{&enclosing};
-
+            auto scope = enter_scope();
             for (std::size_t i = 0; i < stmt.params().size(); ++i) {
-                environment_.define(stmt.params()[i].lexeme, args[i]);
+                environment_->define(stmt.params()[i].lexeme, args[i]);
             }
-
-            // TODO: This try catch is very ugly.
-            //  Figure out a better way to do this with RAII
-            try {
-                for (const auto& statement : stmt.body().statements()) {
-                    execute(*statement);
-                }
-            } catch (...) {
-                environment_ = std::move(enclosing);
-                throw;
+            for (const auto& statement : stmt.body().statements()) {
+                execute(*statement);
             }
-            environment_ = std::move(enclosing);
             return expr_result_;
         };
-        environment_.define(identifier.lexeme, std::make_shared<LoxFunction<decltype(func)>>(identifier, arity, func));
+        environment_->define(identifier.lexeme, std::make_shared<LoxFunction<decltype(func)>>(identifier, arity, func));
     }
 
     void TreeWalkInterpreter::visit(const BlockStmt& stmt)
     {
-        Environment enclosing = std::move(environment_);
-        environment_ = Environment{&enclosing};
-
-        // TODO: This try catch is very ugly.
-        //  Figure out a better way to do this with RAII
-        try {
-            for (const auto& statement : stmt.statements()) {
-                execute(*statement);
-            }
-        } catch (...) {
-            environment_ = std::move(enclosing);
-            throw;
+        auto scope = enter_scope();
+        for (const auto& statement : stmt.statements()) {
+            execute(*statement);
         }
-        environment_ = std::move(enclosing);
     }
 
     void TreeWalkInterpreter::visit(const IfStmt& stmt)

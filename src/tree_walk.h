@@ -36,7 +36,30 @@ namespace lox
         void visit(const WhileStmt& stmt) override;
 
     private:
+        struct Scope {
+            Environment scope;
+            Environment* parent;
+            Environment** environment;
+
+            Scope(Environment** environment)
+                : scope(*environment)
+                , parent(*environment)
+                , environment(environment)
+            {
+                *environment = &scope;
+            }
+
+            ~Scope()
+            {
+                *environment = parent;
+            }
+        };
+
+        Scope enter_scope() { return Scope(&environment_); }
+
         std::shared_ptr<LoxObject> expr_result_ = nullptr;
-        Environment environment_;
+
+        Environment global_;
+        Environment* environment_ = &global_;
     };
 } // namespace lox
