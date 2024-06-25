@@ -72,7 +72,7 @@ namespace lox
         }
 
         std::vector<Token> parameters;
-        if (!consume_expected(TokenType::RightParen)) {
+        if (peek().type != TokenType::RightParen) {
             do {
                 if (parameters.size() >= 255) {
                     panic("can't have more than 255 parameters");

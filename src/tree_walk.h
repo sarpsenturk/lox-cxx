@@ -50,6 +50,14 @@ namespace lox
                 *environment = &scope;
             }
 
+            Scope(Environment** environment, Environment* closure)
+                : scope(closure)
+                , parent(*environment)
+                , environment(environment)
+            {
+                *environment = &scope;
+            }
+
             ~Scope()
             {
                 *environment = parent;
@@ -57,6 +65,7 @@ namespace lox
         };
 
         Scope enter_scope() { return Scope(&environment_); }
+        Scope enter_scope(Environment* closure) { return Scope(&environment_, closure); }
 
         std::shared_ptr<LoxObject> expr_result_ = nullptr;
 

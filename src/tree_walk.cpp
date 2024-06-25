@@ -269,8 +269,8 @@ namespace lox
         //  during the entire lifetime of this callable which.
         //  With the way Lox currently invokes the TreeWalkInterprerter::execute(),
         //  this isn't a problem, however it's still bad.
-        auto func = [&](const ArgList& args) {
-            auto scope = enter_scope();
+        auto func = [&, closure = *environment_](const ArgList& args) mutable {
+            auto scope = enter_scope(&closure);
             for (std::size_t i = 0; i < stmt.params().size(); ++i) {
                 environment_->define(stmt.params()[i].lexeme, args[i]);
             }
