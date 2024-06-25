@@ -25,17 +25,18 @@ namespace lox
         void visit(const VarExpr& expr) override;
         void visit(const AssignmentExpr& expr) override;
         void visit(const LogicExpr& expr) override;
+        void visit(const CallExpr& expr) override;
 
         void visit(const ExprStmt& stmt) override;
         void visit(const PrintStmt& stmt) override;
         void visit(const VarDeclStmt& stmt) override;
+        void visit(const FunDeclStmt& stmt) override;
         void visit(const BlockStmt& stmt) override;
         void visit(const IfStmt& stmt) override;
         void visit(const WhileStmt& stmt) override;
 
     private:
         std::shared_ptr<LoxObject> expr_result_ = nullptr;
-
         Environment environment_;
     };
 } // namespace lox

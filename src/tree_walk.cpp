@@ -2,6 +2,7 @@
 
 #include "error.h"
 #include "lox_boolean.h"
+#include "lox_callable.h"
 #include "lox_nil.h"
 #include "lox_number.h"
 #include "lox_string.h"
@@ -217,6 +218,26 @@ namespace lox
         }
     }
 
+    void TreeWalkInterpreter::visit(const CallExpr& expr)
+    {
+        auto calle = evaluate(expr.calle());
+        if (auto callable = dynamic_cast<LoxCallable*>(calle.get())) {
+            if (callable->arity() != expr.args().size()) {
+                throw LoxError(fmt::format("expected {} arguments but got {}", callable->arity(), expr.args().size()), expr.call_end().location);
+            }
+
+            std::vector<LoxObjectRef> arguments;
+            arguments.reserve(expr.args().size());
+            for (const auto& arg : expr.args()) {
+                arguments.push_back(evaluate(*arg));
+            }
+
+            expr_result_ = callable->call(arguments);
+        } else {
+            throw LoxError(fmt::format("can't invoke type {}", calle->type_name()), calle->token().location);
+        }
+    }
+
     void TreeWalkInterpreter::visit(const ExprStmt& stmt)
     {
         evaluate(stmt.expr());
@@ -233,6 +254,39 @@ namespace lox
     {
         auto value = stmt.initializer() ? evaluate(*stmt.initializer()) : std::make_shared<LoxNil>(stmt.identifier());
         environment_.define(stmt.identifier().lexeme, std::move(value));
+    }
+
+    void TreeWalkInterpreter::visit(const FunDeclStmt& stmt)
+    {
+        const auto identifier = stmt.identifier();
+        const auto arity = stmt.params().size();
+        // TODO: This is very unsafe.
+        //  Capturing stmt by reference means stmt needs to be alive
+        //  during the entire lifetime of this callable which.
+        //  With the way Lox currently invokes the TreeWalkInterprerter::execute(),
+        //  this isn't a problem, however it's still bad.
+        auto func = [&](const ArgList& args) {
+            Environment enclosing = std::move(environment_);
+            environment_ = Environment{&enclosing};
+
+            for (std::size_t i = 0; i < stmt.params().size(); ++i) {
+                environment_.define(stmt.params()[i].lexeme, args[i]);
+            }
+
+            // TODO: This try catch is very ugly.
+            //  Figure out a better way to do this with RAII
+            try {
+                for (const auto& statement : stmt.body().statements()) {
+                    execute(*statement);
+                }
+            } catch (...) {
+                environment_ = std::move(enclosing);
+                throw;
+            }
+            environment_ = std::move(enclosing);
+            return expr_result_;
+        };
+        environment_.define(identifier.lexeme, std::make_shared<LoxFunction<decltype(func)>>(identifier, arity, func));
     }
 
     void TreeWalkInterpreter::visit(const BlockStmt& stmt)

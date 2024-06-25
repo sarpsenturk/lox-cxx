@@ -23,12 +23,13 @@ namespace lox
     private:
         StmtPtr declaration();
         StmtPtr var_decl();
+        StmtPtr fun_decl();
         StmtPtr statement();
         StmtPtr if_stmt();
         StmtPtr while_stmt();
         StmtPtr for_stmt();
         StmtPtr print_stmt();
-        StmtPtr block_stmt();
+        std::unique_ptr<BlockStmt> block_stmt();
         StmtPtr expr_stmt();
         ExprPtr expression();
         ExprPtr assignment();
@@ -39,9 +40,10 @@ namespace lox
         ExprPtr additive();
         ExprPtr multiplicative();
         ExprPtr unary();
-        ExprPtr primay();
+        ExprPtr call();
+        ExprPtr primary();
 
-        [[nodiscar]] bool is_eof() const;
+        [[nodiscard]] bool is_eof() const;
 
         Token consume();
         Token peek() const;

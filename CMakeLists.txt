@@ -18,6 +18,7 @@ add_library(
         src/lox_number.h src/lox_number.cpp
         src/lox_object.h src/lox_object.cpp
         src/lox_string.h src/lox_string.cpp
+        src/lox_callable.h src/lox_callable.cpp
         src/parser.h src/parser.cpp
         src/source_location.h src/source_location.cpp
         src/token.h src/token.cpp

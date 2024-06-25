@@ -41,4 +41,6 @@ namespace lox
     private:
         Token token_;
     };
+
+    using LoxObjectRef = std::shared_ptr<LoxObject>;
 } // namespace lox

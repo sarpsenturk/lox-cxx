@@ -36,6 +36,9 @@ namespace lox
         if (consume_expected(TokenType::Var)) {
             return var_decl();
         }
+        if (consume_expected(TokenType::Fun)) {
+            return fun_decl();
+        }
         return statement();
     }
 
@@ -55,6 +58,40 @@ namespace lox
             panic("expected ';' after variable declaration");
         }
         return std::make_unique<VarDeclStmt>(*identifier, std::move(initializer));
+    }
+
+    StmtPtr Parser::fun_decl()
+    {
+        auto identifier = consume_expected(TokenType::Identifier);
+        if (!identifier) {
+            panic("expected identifier");
+        }
+
+        if (!consume_expected(TokenType::LeftParen)) {
+            panic("expected '(' to start parameter list");
+        }
+
+        std::vector<Token> parameters;
+        if (!consume_expected(TokenType::RightParen)) {
+            do {
+                if (parameters.size() >= 255) {
+                    panic("can't have more than 255 parameters");
+                }
+                if (auto parameter = consume_expected(TokenType::Identifier)) {
+                    parameters.push_back(*parameter);
+                } else {
+                    panic("expected parameter name");
+                }
+            } while (consume_expected(TokenType::Comma));
+        }
+        if (!consume_expected(TokenType::RightParen)) {
+            panic("expected closing ')' after parameter list");
+        }
+        if (!consume_expected(TokenType::LeftBrace)) {
+            panic("expected '{' before body");
+        }
+
+        return std::make_unique<FunDeclStmt>(*identifier, std::move(parameters), block_stmt());
     }
 
     StmtPtr Parser::statement()
@@ -177,7 +214,7 @@ namespace lox
         return std::make_unique<PrintStmt>(std::move(expr));
     }
 
-    StmtPtr Parser::block_stmt()
+    std::unique_ptr<BlockStmt> Parser::block_stmt()
     {
         std::vector<StmtPtr> statements;
         while (peek().type != TokenType::RightBrace && !is_eof()) {
@@ -283,10 +320,31 @@ namespace lox
             auto op = last_token();
             return std::make_unique<UnaryExpr>(op, unary());
         }
-        return primay();
+        return call();
     }
 
-    ExprPtr Parser::primay()
+    ExprPtr Parser::call()
+    {
+        auto expr = primary();
+        while (consume_expected(TokenType::LeftParen)) {
+            std::vector<ExprPtr> arguments;
+            if (peek().type != TokenType::RightParen) {
+                do {
+                    if (arguments.size() >= 255) {
+                        panic("can't have more than 255 arguments");
+                    }
+                    arguments.push_back(expression());
+                } while (consume_expected(TokenType::Comma));
+            }
+            if (auto call_end = consume_expected(TokenType::RightParen)) {
+                return std::make_unique<CallExpr>(std::move(expr), std::move(arguments), *call_end);
+            }
+            panic("expected closing ')' after arguments");
+        }
+        return expr;
+    }
+
+    ExprPtr Parser::primary()
     {
         if (consume_expected(TokenType::Number)) {
             try {

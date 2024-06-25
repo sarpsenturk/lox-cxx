@@ -16,6 +16,7 @@ namespace lox
     class VarExpr;
     class AssignmentExpr;
     class LogicExpr;
+    class CallExpr;
 
     class ExprVisitor
     {
@@ -30,6 +31,7 @@ namespace lox
         virtual void visit(const VarExpr& expr) = 0;
         virtual void visit(const AssignmentExpr& expr) = 0;
         virtual void visit(const LogicExpr& expr) = 0;
+        virtual void visit(const CallExpr& expr) = 0;
 
     protected:
         ExprVisitor(const ExprVisitor&) = default;
@@ -170,9 +172,27 @@ namespace lox
         ExprPtr rhs_;
     };
 
+    class CallExpr : public Expr
+    {
+    public:
+        CallExpr(ExprPtr calle, std::vector<ExprPtr> arguments, Token call_end);
+
+        void accept(ExprVisitor& visitor) const override { return visitor.visit(*this); }
+
+        [[nodiscard]] auto& calle() const { return *calle_; }
+        [[nodiscard]] auto& args() const { return arguments_; }
+        [[nodiscard]] auto& call_end() const { return call_end_; }
+
+    private:
+        ExprPtr calle_;
+        std::vector<ExprPtr> arguments_;
+        Token call_end_;
+    };
+
     class ExprStmt;
     class PrintStmt;
     class VarDeclStmt;
+    class FunDeclStmt;
     class BlockStmt;
     class IfStmt;
     class WhileStmt;
@@ -186,6 +206,7 @@ namespace lox
         virtual void visit(const ExprStmt& stmt) = 0;
         virtual void visit(const PrintStmt& stmt) = 0;
         virtual void visit(const VarDeclStmt& stmt) = 0;
+        virtual void visit(const FunDeclStmt& stmt) = 0;
         virtual void visit(const BlockStmt& stmt) = 0;
         virtual void visit(const IfStmt& stmt) = 0;
         virtual void visit(const WhileStmt& stmt) = 0;
@@ -253,6 +274,23 @@ namespace lox
     private:
         Token identifier_;
         ExprPtr initializer_;
+    };
+
+    class FunDeclStmt : public Stmt
+    {
+    public:
+        FunDeclStmt(Token identifier, std::vector<Token> parameters, std::unique_ptr<BlockStmt> body);
+
+        void accept(StmtVisitor& visitor) const override { visitor.visit(*this); }
+
+        [[nodiscard]] auto& identifier() const { return identifier_; }
+        [[nodiscard]] auto& params() const { return parameters_; }
+        [[nodiscard]] auto& body() const { return *body_; }
+
+    private:
+        Token identifier_;
+        std::vector<Token> parameters_;
+        std::unique_ptr<BlockStmt> body_;
     };
 
     class BlockStmt : public Stmt

@@ -44,6 +44,13 @@ namespace lox
     {
     }
 
+    CallExpr::CallExpr(ExprPtr calle, std::vector<ExprPtr> arguments, Token call_end)
+        : calle_(std::move(calle))
+        , arguments_(std::move(arguments))
+        , call_end_(call_end)
+    {
+    }
+
     ExprStmt::ExprStmt(ExprPtr expr)
         : expr_(std::move(expr))
     {
@@ -57,6 +64,13 @@ namespace lox
     VarDeclStmt::VarDeclStmt(Token identifier, ExprPtr initializer)
         : identifier_(identifier)
         , initializer_(std::move(initializer))
+    {
+    }
+
+    FunDeclStmt::FunDeclStmt(Token identifier, std::vector<Token> parameters, std::unique_ptr<BlockStmt> body)
+        : identifier_(identifier)
+        , parameters_(std::move(parameters))
+        , body_(std::move(body))
     {
     }
 
