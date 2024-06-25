@@ -31,6 +31,7 @@ namespace lox
         void visit(const VarDeclStmt& stmt) override;
         void visit(const BlockStmt& stmt) override;
         void visit(const IfStmt& stmt) override;
+        void visit(const WhileStmt& stmt) override;
 
     private:
         std::shared_ptr<LoxObject> expr_result_ = nullptr;

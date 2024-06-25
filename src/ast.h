@@ -175,6 +175,7 @@ namespace lox
     class VarDeclStmt;
     class BlockStmt;
     class IfStmt;
+    class WhileStmt;
 
     class StmtVisitor
     {
@@ -187,6 +188,7 @@ namespace lox
         virtual void visit(const VarDeclStmt& stmt) = 0;
         virtual void visit(const BlockStmt& stmt) = 0;
         virtual void visit(const IfStmt& stmt) = 0;
+        virtual void visit(const WhileStmt& stmt) = 0;
 
     protected:
         StmtVisitor(const StmtVisitor&) = default;
@@ -281,5 +283,20 @@ namespace lox
         ExprPtr condition_;
         StmtPtr then_stmt_;
         StmtPtr else_stmt_;
+    };
+
+    class WhileStmt : public Stmt
+    {
+    public:
+        WhileStmt(ExprPtr condition, StmtPtr body);
+
+        void accept(StmtVisitor& visitor) const override { visitor.visit(*this); }
+
+        [[nodiscard]] auto& condition() const { return *condition_; }
+        [[nodiscard]] auto& body() const { return *body_; }
+
+    private:
+        ExprPtr condition_;
+        StmtPtr body_;
     };
 } // namespace lox

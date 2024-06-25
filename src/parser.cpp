@@ -62,6 +62,12 @@ namespace lox
         if (consume_expected(TokenType::If)) {
             return if_stmt();
         }
+        if (consume_expected(TokenType::While)) {
+            return while_stmt();
+        }
+        if (consume_expected(TokenType::For)) {
+            return for_stmt();
+        }
         if (consume_expected(TokenType::Print)) {
             return print_stmt();
         }
@@ -88,6 +94,78 @@ namespace lox
         }
 
         return std::make_unique<IfStmt>(std::move(condition), std::move(then_branch), std::move(else_branch));
+    }
+
+    StmtPtr Parser::while_stmt()
+    {
+        if (!consume_expected(TokenType::LeftParen)) {
+            panic("expected '(' after while");
+        }
+        auto condition = expression();
+        if (!consume_expected(TokenType::RightParen)) {
+            panic("expected ')' after while condition");
+        }
+        return std::make_unique<WhileStmt>(std::move(condition), statement());
+    }
+
+    StmtPtr Parser::for_stmt()
+    {
+        if (!consume_expected(TokenType::LeftParen)) {
+            panic("expected '(' after for");
+        }
+
+        StmtPtr initializer;
+        if (consume_expected(TokenType::Semicolon)) {
+            initializer = nullptr;
+        } else if (consume_expected(TokenType::Var)) {
+            initializer = var_decl();
+        } else {
+            initializer = expr_stmt();
+        }
+
+        ExprPtr condition = nullptr;
+        if (peek().type != TokenType::Semicolon) {
+            condition = expression();
+        }
+        if (!consume_expected(TokenType::Semicolon)) {
+            panic("expected ';' after loop condition");
+        }
+
+        ExprPtr increment = nullptr;
+        if (peek().type != TokenType::Semicolon) {
+            increment = expression();
+        }
+        if (!consume_expected(TokenType::RightParen)) {
+            panic("expected closing ')' after for loop");
+        }
+
+        auto body = statement();
+        if (increment != nullptr) {
+            // Have to do this hack as you can't just do std::vector<StmtPtr>{std::move(body), ...}
+            // because std::initializer_list always copies the elements...
+            std::vector<StmtPtr> stmts;
+            stmts.reserve(2);
+            stmts.push_back(std::move(body));
+            stmts.push_back(std::make_unique<ExprStmt>(std::move(increment)));
+            body = std::make_unique<BlockStmt>(std::move(stmts));
+        }
+
+        if (condition == nullptr) {
+            condition = std::make_unique<LiteralExpr>(Token{}, true);
+        }
+        body = std::make_unique<WhileStmt>(std::move(condition), std::move(body));
+
+        if (initializer != nullptr) {
+            // Again this hack is necessary.
+            // Probably should create a helper function to create BlockStmt or std::vector<StmtPtr> given n statements
+            std::vector<StmtPtr> stmts;
+            stmts.reserve(2);
+            stmts.push_back(std::move(initializer));
+            stmts.push_back(std::move(body));
+            body = std::make_unique<BlockStmt>(std::move(stmts));
+        }
+
+        return body;
     }
 
     StmtPtr Parser::print_stmt()

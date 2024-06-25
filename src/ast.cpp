@@ -71,4 +71,10 @@ namespace lox
         , else_stmt_(std::move(else_stmt))
     {
     }
+
+    WhileStmt::WhileStmt(ExprPtr condition, StmtPtr body)
+        : condition_(std::move(condition))
+        , body_(std::move(body))
+    {
+    }
 } // namespace lox

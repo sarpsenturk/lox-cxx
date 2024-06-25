@@ -261,4 +261,11 @@ namespace lox
             execute(*stmt.else_branch());
         }
     }
+
+    void TreeWalkInterpreter::visit(const WhileStmt& stmt)
+    {
+        while (evaluate(stmt.condition())->is_truthy()) {
+            execute(stmt.body());
+        }
+    }
 } // namespace lox
