@@ -28,6 +28,7 @@ namespace lox
         StmtPtr if_stmt();
         StmtPtr while_stmt();
         StmtPtr for_stmt();
+        StmtPtr return_stmt();
         StmtPtr print_stmt();
         std::unique_ptr<BlockStmt> block_stmt();
         StmtPtr expr_stmt();

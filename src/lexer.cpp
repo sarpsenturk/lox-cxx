@@ -23,6 +23,7 @@ namespace lox
         std::make_pair("super"sv, TokenType::Super),
         std::make_pair("nil"sv, TokenType::Nil),
         std::make_pair("print"sv, TokenType::Print),
+        std::make_pair("return"sv, TokenType::Return),
     };
 
     Lexer::Lexer(std::string_view source)

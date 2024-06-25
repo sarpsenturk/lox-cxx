@@ -105,6 +105,9 @@ namespace lox
         if (consume_expected(TokenType::For)) {
             return for_stmt();
         }
+        if (consume_expected(TokenType::Return)) {
+            return return_stmt();
+        }
         if (consume_expected(TokenType::Print)) {
             return print_stmt();
         }
@@ -203,6 +206,18 @@ namespace lox
         }
 
         return body;
+    }
+
+    StmtPtr Parser::return_stmt()
+    {
+        ExprPtr value = nullptr;
+        if (peek().type != TokenType::Semicolon) {
+            value = expression();
+        }
+        if (auto ret = consume_expected(TokenType::Semicolon)) {
+            return std::make_unique<ReturnStmt>(*ret, std::move(value));
+        }
+        panic("expected ';' after return statement");
     }
 
     StmtPtr Parser::print_stmt()

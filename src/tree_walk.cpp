@@ -64,6 +64,10 @@ namespace lox
                     assert(false && "unary op not handled in unary_op_name()");
             }
         }
+
+        struct LoxReturn {
+            LoxObjectRef value;
+        };
     } // namespace
 
     std::shared_ptr<LoxObject> TreeWalkInterpreter::evaluate(const Expr& expr)
@@ -270,8 +274,12 @@ namespace lox
             for (std::size_t i = 0; i < stmt.params().size(); ++i) {
                 environment_->define(stmt.params()[i].lexeme, args[i]);
             }
-            for (const auto& statement : stmt.body().statements()) {
-                execute(*statement);
+            try {
+                for (const auto& statement : stmt.body().statements()) {
+                    execute(*statement);
+                }
+            } catch (LoxReturn&& ret) {
+                return std::move(ret.value);
             }
             return expr_result_;
         };
@@ -300,5 +308,14 @@ namespace lox
         while (evaluate(stmt.condition())->is_truthy()) {
             execute(stmt.body());
         }
+    }
+
+    void TreeWalkInterpreter::visit(const ReturnStmt& stmt)
+    {
+        auto value = stmt.value() != nullptr ? evaluate(*stmt.value()) : std::make_shared<LoxNil>(stmt.ret());
+        // Wow this sucks. But I understand why the book does it.
+        // Doing all this stack unwinding in any other way I can think of
+        // with a deeply nested call stack like this would be even worse
+        throw LoxReturn(std::move(value)); // NOLINT(*-exception-baseclass)
     }
 } // namespace lox

@@ -91,4 +91,10 @@ namespace lox
         , body_(std::move(body))
     {
     }
+
+    ReturnStmt::ReturnStmt(Token ret, ExprPtr value)
+        : ret_(ret)
+        , value_(std::move(value))
+    {
+    }
 } // namespace lox

@@ -34,6 +34,7 @@ namespace lox
         void visit(const BlockStmt& stmt) override;
         void visit(const IfStmt& stmt) override;
         void visit(const WhileStmt& stmt) override;
+        void visit(const ReturnStmt& stmt) override;
 
     private:
         struct Scope {

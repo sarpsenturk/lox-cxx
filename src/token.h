@@ -53,6 +53,7 @@ namespace lox
         Nil,
 
         Print,
+        Return,
     };
 
     struct Token {

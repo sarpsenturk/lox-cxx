@@ -79,6 +79,8 @@ namespace lox
                 return "Nil";
             case TokenType::Print:
                 return "Print";
+            case TokenType::Return:
+                return "Return";
         }
     }
 } // namespace lox
