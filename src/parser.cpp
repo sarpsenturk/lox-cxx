@@ -19,7 +19,7 @@ namespace lox
         while (!is_eof()) {
             try {
                 statements.push_back(declaration());
-            } catch (LoxError&& err) {
+            } catch (const LoxError& err) {
                 errors.push_back(std::move(err));
                 synchronize();
             }

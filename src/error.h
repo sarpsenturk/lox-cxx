@@ -15,7 +15,7 @@ namespace lox
         [[nodiscard]] auto& msg() const { return message_; }
         [[nodiscard]] auto& location() const { return location_; }
 
-        [[nodiscard]] const char* what() const override;
+        [[nodiscard]] const char* what() const noexcept override;
 
     private:
         std::string message_;

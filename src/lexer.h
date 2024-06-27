@@ -19,7 +19,7 @@ namespace lox
         Token tokenize_next();
         std::vector<Token> tokenize();
 
-        [[nodiscar]] bool is_eof() const;
+        [[nodiscard]] bool is_eof() const;
 
     private:
         std::string_view source_;

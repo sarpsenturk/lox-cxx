@@ -278,7 +278,7 @@ namespace lox
                 for (const auto& statement : stmt.body().statements()) {
                     execute(*statement);
                 }
-            } catch (LoxReturn&& ret) {
+            } catch (const LoxReturn& ret) {
                 return std::move(ret.value);
             }
             return expr_result_;
@@ -316,6 +316,6 @@ namespace lox
         // Wow this sucks. But I understand why the book does it.
         // Doing all this stack unwinding in any other way I can think of
         // with a deeply nested call stack like this would be even worse
-        throw LoxReturn(std::move(value)); // NOLINT(*-exception-baseclass)
+        throw LoxReturn{std::move(value)}; // NOLINT(*-exception-baseclass)
     }
 } // namespace lox

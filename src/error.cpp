@@ -10,7 +10,7 @@ namespace lox
     {
     }
 
-    const char* LoxError::what() const
+    const char* LoxError::what() const noexcept
     {
         return message_.c_str();
     }
