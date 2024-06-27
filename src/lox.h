@@ -1,5 +1,6 @@
 #pragma once
 
+#include "vm.h"
 
 #include <string>
 
@@ -12,5 +13,6 @@ namespace lox
         void run_string(const std::string& string);
 
     private:
+        VM vm_;
     };
 } // namespace lox

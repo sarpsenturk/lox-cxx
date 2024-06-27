@@ -3,11 +3,13 @@
 #include "error.h"
 #include "lexer.h"
 #include "parser.h"
+#include "bytecode_compiler.h"
 
 #include <cstdio>
 #include <string>
 
 #include <fmt/core.h>
+#include <fmt/ranges.h>
 
 namespace lox
 {
@@ -51,6 +53,16 @@ namespace lox
             }
 
             const auto& statements = *parse_result;
+            auto compiler = BytecodeCompiler{};
+            auto compile_result = compiler.compile(statements);
+            if (!compile_result) {
+                fmt::println("Failed to compile");
+                return;
+            }
+            
+            const auto& bytecode = (*compile_result).bytecode;
+            fmt::print("Generated {} bytes of bytecode:\n{}", bytecode.size(), bytecode);
+            vm_.execute(bytecode);
         } catch (const LoxError& error) {
             fmt::println(stderr, "{}", error.what());
         }
