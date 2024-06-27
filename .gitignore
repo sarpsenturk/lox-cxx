@@ -11,3 +11,8 @@ cmake-build-*/
 
 # User specific files
 CMakeUserPresets.json
+
+# clangd LSP files
+.cache/
+compile_commands.json
+

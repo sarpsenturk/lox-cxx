@@ -10,7 +10,6 @@ add_library(
         lox
         src/lox.h src/lox.cpp
         src/ast.h src/ast.cpp
-        src/environment.h src/environment.cpp
         src/error.h src/error.cpp
         src/lexer.h src/lexer.cpp
         src/lox_boolean.h src/lox_boolean.cpp
@@ -22,7 +21,6 @@ add_library(
         src/parser.h src/parser.cpp
         src/source_location.h src/source_location.cpp
         src/token.h src/token.cpp
-        src/tree_walk.h src/tree_walk.cpp
 )
 target_compile_features(lox PUBLIC cxx_std_20)
 target_include_directories(lox PUBLIC src)

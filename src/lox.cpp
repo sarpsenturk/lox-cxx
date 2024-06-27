@@ -51,7 +51,6 @@ namespace lox
             }
 
             const auto& statements = *parse_result;
-            interpreter_.execute(statements);
         } catch (const LoxError& error) {
             fmt::println(stderr, "{}", error.what());
         }

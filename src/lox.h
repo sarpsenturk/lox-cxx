@@ -1,6 +1,5 @@
 #pragma once
 
-#include "tree_walk.h"
 
 #include <string>
 
@@ -13,6 +12,5 @@ namespace lox
         void run_string(const std::string& string);
 
     private:
-        TreeWalkInterpreter interpreter_;
     };
 } // namespace lox
