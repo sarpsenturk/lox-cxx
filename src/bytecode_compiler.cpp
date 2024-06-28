@@ -99,6 +99,9 @@ namespace lox
             case TokenType::Minus:
                 write_instruction(Instruction::Neg);
                 break;
+            case TokenType::Bang:
+                write_instruction(Instruction::Not);
+                break;
         }
     }
 
@@ -111,6 +114,8 @@ namespace lox
     {
         if (std::get_if<NilLiteral>(&expr.literal())) {
             write_instruction(Instruction::PushNil);
+        } else if (const auto* boolean = std::get_if<BooleanLiteral>(&expr.literal())) {
+            write_instruction(*boolean ? Instruction::PushTrue : Instruction::PushFalse);
         } else {
             constants_.push_back('@');
             const auto constant_index = constant_index_++;

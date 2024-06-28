@@ -2,6 +2,7 @@
 
 #include "vm_instruction.h"
 
+#include "lox_boolean.h"
 #include "lox_nil.h"
 #include "lox_number.h"
 #include "lox_string.h"
@@ -73,11 +74,20 @@ namespace lox
                 case Instruction::Neg:
                     op_neg();
                     break;
+                case Instruction::Not:
+                    op_not();
+                    break;
                 case Instruction::PushConstant:
                     op_push_constant(read());
                     break;
                 case Instruction::PushNil:
                     op_push_nil();
+                    break;
+                case Instruction::PushTrue:
+                    op_push_true();
+                    break;
+                case Instruction::PushFalse:
+                    op_push_false();
                     break;
                 case Instruction::Print:
                     op_print();
@@ -134,6 +144,12 @@ namespace lox
         push(pop()->negate());
     }
 
+    void VM::op_not()
+    {
+        auto object = pop();
+        push(std::make_shared<LoxBoolean>(!object->is_truthy()));
+    }
+
     void VM::op_push_constant(std::uint8_t index)
     {
         push(constants_[index]);
@@ -141,7 +157,17 @@ namespace lox
 
     void VM::op_push_nil()
     {
-        push(std::make_shared<LoxNil>());
+        push(LoxNil::nil_ref());
+    }
+
+    void VM::op_push_true()
+    {
+        push(LoxBoolean::true_ref());
+    }
+
+    void VM::op_push_false()
+    {
+        push(LoxBoolean::false_ref());
     }
 
     void VM::op_print()

@@ -11,8 +11,11 @@ namespace lox
         Mul,
         Div,
         Neg,
+        Not,
         PushConstant,
         PushNil,
+        PushTrue,
+        PushFalse,
         Print,
         Trap = UINT8_MAX,
     };

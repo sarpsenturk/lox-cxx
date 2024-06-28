@@ -9,6 +9,18 @@ namespace lox
     {
     }
 
+    LoxObjectRef LoxBoolean::true_ref()
+    {
+        static auto ref = std::make_shared<LoxBoolean>(true);
+        return ref;
+    }
+
+    LoxObjectRef LoxBoolean::false_ref()
+    {
+        static auto ref = std::make_shared<LoxBoolean>(false);
+        return ref;
+    }
+
     std::optional<bool> LoxBoolean::cmp_equal(const LoxObject* other)
     {
         // TODO: I'm not sure if Lox supports this kind of boolean checking.

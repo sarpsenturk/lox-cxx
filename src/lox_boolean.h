@@ -9,6 +9,9 @@ namespace lox
     public:
         explicit LoxBoolean(bool value);
 
+        static LoxObjectRef true_ref();
+        static LoxObjectRef false_ref();
+
         [[nodiscard]] const char* type_name() const override { return "Boolean"; }
         [[nodiscard]] bool is_truthy() const override { return value_; }
         [[nodiscard]] std::string to_string() const override { return value_ ? "true" : "false"; }

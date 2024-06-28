@@ -17,10 +17,16 @@ namespace lox
                 return "div";
             case Instruction::Neg:
                 return "neg";
+            case Instruction::Not:
+                return "not";
             case Instruction::PushConstant:
                 return "push_constant";
             case Instruction::PushNil:
                 return "push_nil";
+            case Instruction::PushTrue:
+                return "push_true";
+            case Instruction::PushFalse:
+                return "push_false";
             case Instruction::Trap:
                 return "trap";
             case Instruction::Print:

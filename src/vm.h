@@ -32,8 +32,11 @@ namespace lox
         void op_mul();
         void op_div();
         void op_neg();
+        void op_not();
         void op_push_constant(std::uint8_t index);
         void op_push_nil();
+        void op_push_true();
+        void op_push_false();
         void op_print();
 
         std::stack<LoxObjectRef> stack_;
