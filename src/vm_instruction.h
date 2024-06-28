@@ -13,6 +13,7 @@ namespace lox
         Neg,
         PushConstant,
         PushNil,
+        Print,
         Trap = UINT8_MAX,
     };
 

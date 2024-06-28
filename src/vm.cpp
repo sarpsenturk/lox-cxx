@@ -4,8 +4,10 @@
 
 #include "lox_nil.h"
 #include "lox_number.h"
+#include "lox_string.h"
 
 #include <cassert>
+#include <cstdio>
 #include <cstring>
 
 namespace lox
@@ -23,6 +25,17 @@ namespace lox
             isp += sizeof(double);
             return value;
         };
+        auto read_string = [&]() -> std::string {
+            std::string string;
+            while (true) {
+                const char c = read();
+                if (c == '\0') {
+                    break;
+                }
+                string.push_back(c);
+            }
+            return string;
+        };
 
         // Extract constants
         constants_.clear();
@@ -33,6 +46,9 @@ namespace lox
             switch (type) {
                 case 'd':
                     constants_.push_back(std::make_shared<LoxNumber>(read_number()));
+                    break;
+                case 's':
+                    constants_.push_back(std::make_shared<LoxString>(read_string()));
                     break;
             }
         }
@@ -62,6 +78,9 @@ namespace lox
                     break;
                 case Instruction::PushNil:
                     op_push_nil();
+                    break;
+                case Instruction::Print:
+                    op_print();
                     break;
                 case Instruction::Trap:
                     throw VMTrap();
@@ -123,5 +142,10 @@ namespace lox
     void VM::op_push_nil()
     {
         push(std::make_shared<LoxNil>());
+    }
+
+    void VM::op_print()
+    {
+        std::puts(pop()->to_string().c_str());
     }
 } // namespace lox

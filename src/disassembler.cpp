@@ -22,6 +22,17 @@ namespace lox
             isp += sizeof(double);
             return value;
         };
+        auto read_string = [&]() -> std::string {
+            std::string string;
+            while (true) {
+                const char c = read();
+                if (c == '\0') {
+                    break;
+                }
+                string.push_back(c);
+            }
+            return string;
+        };
 
         std::stringstream result;
 
@@ -33,6 +44,9 @@ namespace lox
             switch (type) {
                 case 'd':
                     result << fmt::format("@{}{} {}\n", index, (char)type, read_number());
+                    break;
+                case 's':
+                    result << fmt::format("@{}{} \"{}\"\n", index, (char)type, read_string());
                     break;
             }
         }

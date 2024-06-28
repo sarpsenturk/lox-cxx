@@ -34,6 +34,7 @@ namespace lox
         void op_neg();
         void op_push_constant(std::uint8_t index);
         void op_push_nil();
+        void op_print();
 
         std::stack<LoxObjectRef> stack_;
         std::vector<LoxObjectRef> constants_;

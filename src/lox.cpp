@@ -35,7 +35,6 @@ namespace lox
         }
 
         run_string(source);
-        fmt::println("{}\n", vm_.pop()->to_string());
     }
 
     void Lox::run_string(const std::string& source)

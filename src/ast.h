@@ -115,12 +115,8 @@ namespace lox
 
         void accept(ExprVisitor& visitor) const override { return visitor.visit(*this); }
 
-        [[nodiscard]] auto& literal_value() const { return value_; }
-        [[nodiscard]] NumberLiteral as_number() const { return std::get<NumberLiteral>(value_); }
-        [[nodiscard]] StringLiteral as_string() const { return std::get<StringLiteral>(value_); }
-        [[nodiscard]] BooleanLiteral as_bool() const { return std::get<BooleanLiteral>(value_); }
-
-        [[nodiscard]] auto& literal_token() const { return literal_; }
+        [[nodiscard]] auto& literal() const { return value_; }
+        [[nodiscard]] auto& token() const { return literal_; }
 
     private:
         Token literal_;

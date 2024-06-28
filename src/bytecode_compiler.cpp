@@ -25,7 +25,12 @@ namespace lox
                 const auto bytes = std::bit_cast<std::array<std::uint8_t, sizeof(NumberLiteral)>>(number);
                 return std::vector<std::uint8_t>{bytes.begin(), bytes.end()};
             }
-            auto operator()(const StringLiteral& string) const { return std::vector<std::uint8_t>{string.begin(), string.end()}; }
+            auto operator()(const StringLiteral& string) const
+            {
+                auto bytes = std::vector<std::uint8_t>{string.begin(), string.end()};
+                bytes.push_back(0);
+                return bytes;
+            }
             std::vector<std::uint8_t> operator()(BooleanLiteral boolean) const { return {static_cast<std::uint8_t>(boolean)}; }
         };
     } // namespace
@@ -104,14 +109,14 @@ namespace lox
 
     void BytecodeCompiler::visit(const LiteralExpr& expr)
     {
-        if (std::get_if<NilLiteral>(&expr.literal_value())) {
+        if (std::get_if<NilLiteral>(&expr.literal())) {
             write_instruction(Instruction::PushNil);
         } else {
             constants_.push_back('@');
             const auto constant_index = constant_index_++;
             constants_.push_back(constant_index);
-            constants_.push_back(std::visit(ConstantType{}, expr.literal_value()));
-            const auto bytes = std::visit(ConstantToBytes{}, expr.literal_value());
+            constants_.push_back(std::visit(ConstantType{}, expr.literal()));
+            const auto bytes = std::visit(ConstantToBytes{}, expr.literal());
             constants_.insert(constants_.end(), bytes.begin(), bytes.end());
             write_instruction(Instruction::PushConstant, constant_index);
         }
@@ -144,7 +149,8 @@ namespace lox
 
     void BytecodeCompiler::visit(const PrintStmt& stmt)
     {
-        write_instruction(Instruction::Trap);
+        compile(stmt.expr());
+        write_instruction(Instruction::Print);
     }
 
     void BytecodeCompiler::visit(const VarDeclStmt& stmt)

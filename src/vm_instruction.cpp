@@ -23,6 +23,8 @@ namespace lox
                 return "push_nil";
             case Instruction::Trap:
                 return "trap";
+            case Instruction::Print:
+                return "print";
         }
     }
 } // namespace lox
