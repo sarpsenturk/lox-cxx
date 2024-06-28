@@ -13,8 +13,6 @@ namespace lox
     class LoxCallable : public LoxObject
     {
     public:
-        explicit LoxCallable(Token token);
-
         virtual std::shared_ptr<LoxObject> call(const std::vector<std::shared_ptr<LoxObject>>& args) = 0;
         virtual std::size_t arity() const = 0;
     };
@@ -24,9 +22,8 @@ namespace lox
     class LoxFunction : public LoxCallable
     {
     public:
-        LoxFunction(Token identifier, std::size_t arity, auto&& function)
-            : LoxCallable(identifier)
-            , arity_(arity)
+        LoxFunction(std::size_t arity, auto&& function)
+            : arity_(arity)
             , function_(std::forward<decltype(function)>(function))
         {
         }

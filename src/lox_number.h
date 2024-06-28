@@ -9,7 +9,7 @@ namespace lox
     class LoxNumber final : public LoxObject
     {
     public:
-        LoxNumber(Token token, double value);
+        explicit LoxNumber(double value);
 
         [[nodiscard]] const char* type_name() const override { return "Number"; }
         [[nodiscard]] bool is_truthy() const override { return value_ != 0.0; };

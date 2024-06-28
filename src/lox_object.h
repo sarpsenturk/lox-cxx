@@ -1,7 +1,5 @@
 #pragma once
 
-#include "token.h"
-
 #include <memory>
 #include <optional>
 #include <string>
@@ -11,7 +9,7 @@ namespace lox
     class LoxObject
     {
     public:
-        explicit LoxObject(Token token);
+        LoxObject() = default;
         virtual ~LoxObject() = default;
 
         [[nodiscard]] virtual const char* type_name() const = 0;
@@ -30,16 +28,11 @@ namespace lox
         virtual std::optional<bool> cmp_less_equal(const LoxObject* other);
         virtual std::optional<bool> cmp_equal(const LoxObject* other);
 
-        [[nodiscard]] auto& token() const { return token_; }
-
     protected:
         LoxObject(const LoxObject&) = default;
         LoxObject(LoxObject&&) = default;
         LoxObject& operator=(const LoxObject&) = default;
         LoxObject& operator=(LoxObject&&) = default;
-
-    private:
-        Token token_;
     };
 
     using LoxObjectRef = std::shared_ptr<LoxObject>;

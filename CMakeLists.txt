@@ -12,6 +12,7 @@ add_library(
         src/ast.h src/ast.cpp
         src/bytecode_compiler.h src/bytecode_compiler.cpp
         src/error.h src/error.cpp
+        src/disassembler.h src/disassembler.cpp
         src/lexer.h src/lexer.cpp
         src/lox_boolean.h src/lox_boolean.cpp
         src/lox_nil.h src/lox_nil.cpp

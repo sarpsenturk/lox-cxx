@@ -7,8 +7,6 @@ namespace lox
     class LoxNil : public LoxObject
     {
     public:
-        explicit LoxNil(Token token);
-
         [[nodiscard]] const char* type_name() const override { return "Nil"; }
         [[nodiscard]] bool is_truthy() const override { return false; }
         [[nodiscard]] std::string to_string() const override { return "nil"; }

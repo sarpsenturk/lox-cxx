@@ -6,9 +6,8 @@
 
 namespace lox
 {
-    LoxNumber::LoxNumber(Token token, double value)
-        : LoxObject(token)
-        , value_(value)
+    LoxNumber::LoxNumber(double value)
+        : value_(value)
     {
     }
 
@@ -19,13 +18,13 @@ namespace lox
 
     std::unique_ptr<LoxObject> LoxNumber::negate()
     {
-        return std::make_unique<LoxNumber>(token(), -value_);
+        return std::make_unique<LoxNumber>(value_);
     }
 
     std::unique_ptr<LoxObject> LoxNumber::subtract(const LoxObject* other)
     {
         if (const auto* rhs = dynamic_cast<const LoxNumber*>(other)) {
-            return std::make_unique<LoxNumber>(token(), value_ - rhs->value_);
+            return std::make_unique<LoxNumber>(value_ - rhs->value_);
         }
         return nullptr;
     }
@@ -33,7 +32,7 @@ namespace lox
     std::unique_ptr<LoxObject> LoxNumber::add(const LoxObject* other)
     {
         if (const auto* rhs = dynamic_cast<const LoxNumber*>(other)) {
-            return std::make_unique<LoxNumber>(token(), value_ + rhs->value_);
+            return std::make_unique<LoxNumber>(value_ + rhs->value_);
         }
         return nullptr;
     }
@@ -41,7 +40,7 @@ namespace lox
     std::unique_ptr<LoxObject> LoxNumber::multiply(const LoxObject* other)
     {
         if (const auto* rhs = dynamic_cast<const LoxNumber*>(other)) {
-            return std::make_unique<LoxNumber>(token(), value_ * rhs->value_);
+            return std::make_unique<LoxNumber>(value_ * rhs->value_);
         }
         return nullptr;
     }
@@ -50,9 +49,9 @@ namespace lox
     {
         if (const auto* rhs = dynamic_cast<const LoxNumber*>(other)) {
             if (rhs->value_ == 0.0) {
-                throw LoxError{"divide by 0", rhs->token().location};
+                throw LoxError{"divide by 0", {}};
             }
-            return std::make_unique<LoxNumber>(token(), value_ / rhs->value_);
+            return std::make_unique<LoxNumber>(value_ / rhs->value_);
         }
         return nullptr;
     }

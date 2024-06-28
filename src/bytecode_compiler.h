@@ -26,6 +26,7 @@ namespace lox
     public:
         CompileResult compile(const std::vector<StmtPtr>& statements);
         void compile(const Stmt& stmt);
+        void compile(const Expr& expr);
 
         void visit(const BinaryExpr& expr) override;
         void visit(const UnaryExpr& expr) override;
@@ -47,7 +48,11 @@ namespace lox
 
     private:
         void write_instruction(Instruction instruction);
+        void write_instruction(Instruction, std::uint8_t operand);
+        void add_constant(double number);
 
-        std::vector<std::uint8_t> bytecode_;
+        std::vector<std::uint8_t> code_;
+        std::vector<std::uint8_t> constants_;
+        std::uint8_t constant_index_ = 0;
     };
 } // namespace lox

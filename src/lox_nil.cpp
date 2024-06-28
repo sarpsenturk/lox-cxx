@@ -2,11 +2,6 @@
 
 namespace lox
 {
-    LoxNil::LoxNil(Token token)
-        : LoxObject(token)
-    {
-    }
-
     std::optional<bool> LoxNil::cmp_equal(const LoxObject* other)
     {
         // All nil values are considered equivalent

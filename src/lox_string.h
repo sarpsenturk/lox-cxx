@@ -10,7 +10,7 @@ namespace lox
     class LoxString : public LoxObject
     {
     public:
-        LoxString(Token token, std::string value);
+        explicit LoxString(std::string value);
 
         [[nodiscard]] const char* type_name() const override { return "String"; }
         [[nodiscard]] std::string to_string() const override { return value_; }

@@ -1,9 +1,11 @@
 #pragma once
 
 #include "error.h"
-#include "vm_instruction.h"
+#include "lox_object.h"
 
 #include <span>
+#include <stack>
+#include <vector>
 
 namespace lox
 {
@@ -21,10 +23,19 @@ namespace lox
     public:
         void execute(std::span<const std::uint8_t> bytecode);
 
-    private:
-        Instruction fetch();
+        void push(LoxObjectRef object);
+        LoxObjectRef pop();
 
-        std::span<const std::uint8_t> bytecode_;
-        std::size_t isp_ = 0;
+    private:
+        void op_add();
+        void op_sub();
+        void op_mul();
+        void op_div();
+        void op_neg();
+        void op_push_constant(std::uint8_t index);
+        void op_push_nil();
+
+        std::stack<LoxObjectRef> stack_;
+        std::vector<LoxObjectRef> constants_;
     };
 } // namespace lox

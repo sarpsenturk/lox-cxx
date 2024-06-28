@@ -1,9 +1,10 @@
 #include "lox.h"
 
+#include "bytecode_compiler.h"
+#include "disassembler.h"
 #include "error.h"
 #include "lexer.h"
 #include "parser.h"
-#include "bytecode_compiler.h"
 
 #include <cstdio>
 #include <string>
@@ -34,6 +35,7 @@ namespace lox
         }
 
         run_string(source);
+        fmt::println("{}\n", vm_.pop()->to_string());
     }
 
     void Lox::run_string(const std::string& source)
@@ -59,9 +61,11 @@ namespace lox
                 fmt::println("Failed to compile");
                 return;
             }
-            
+
             const auto& bytecode = (*compile_result).bytecode;
-            fmt::print("Generated {} bytes of bytecode:\n{}", bytecode.size(), bytecode);
+            fmt::print("Generated {} bytes of bytecode:\n", bytecode.size());
+            fmt::println("{}", disassemble(bytecode));
+
             vm_.execute(bytecode);
         } catch (const LoxError& error) {
             fmt::println(stderr, "{}", error.what());

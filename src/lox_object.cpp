@@ -2,11 +2,6 @@
 
 namespace lox
 {
-    LoxObject::LoxObject(Token token)
-        : token_(token)
-    {
-    }
-
     std::unique_ptr<LoxObject> LoxObject::negate()
     {
         return nullptr;

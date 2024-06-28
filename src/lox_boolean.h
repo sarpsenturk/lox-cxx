@@ -7,7 +7,7 @@ namespace lox
     class LoxBoolean : public LoxObject
     {
     public:
-        LoxBoolean(Token token, bool value);
+        explicit LoxBoolean(bool value);
 
         [[nodiscard]] const char* type_name() const override { return "Boolean"; }
         [[nodiscard]] bool is_truthy() const override { return value_; }

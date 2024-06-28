@@ -2,8 +2,4 @@
 
 namespace lox
 {
-    LoxCallable::LoxCallable(Token token)
-        : LoxObject(token)
-    {
-    }
 } // namespace lox

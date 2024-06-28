@@ -2,16 +2,15 @@
 
 namespace lox
 {
-    LoxString::LoxString(Token token, std::string value)
-        : LoxObject(token)
-        , value_(std::move(value))
+    LoxString::LoxString(std::string value)
+        : value_(std::move(value))
     {
     }
 
     std::unique_ptr<LoxObject> LoxString::add(const LoxObject* other)
     {
         if (const auto* rhs = dynamic_cast<const LoxString*>(other)) {
-            return std::make_unique<LoxString>(token(), value_ + rhs->value_);
+            return std::make_unique<LoxString>(value_ + rhs->value_);
         }
         return nullptr;
     }

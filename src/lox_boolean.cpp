@@ -4,9 +4,8 @@
 
 namespace lox
 {
-    LoxBoolean::LoxBoolean(Token token, bool value)
-        : LoxObject(token)
-        , value_(value)
+    LoxBoolean::LoxBoolean(bool value)
+        : value_(value)
     {
     }
 
