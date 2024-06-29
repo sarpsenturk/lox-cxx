@@ -10,6 +10,7 @@ add_library(
         lox
         src/lox.h src/lox.cpp
         src/ast.h src/ast.cpp
+        src/bytecode.h src/bytecode.cpp
         src/bytecode_compiler.h src/bytecode_compiler.cpp
         src/error.h src/error.cpp
         src/disassembler.h src/disassembler.cpp

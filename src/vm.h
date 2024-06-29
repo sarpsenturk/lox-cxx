@@ -21,7 +21,7 @@ namespace lox
     class VM
     {
     public:
-        void execute(std::span<const std::uint8_t> bytecode);
+        void execute(std::span<const std::uint8_t> code);
 
         void push(LoxObjectRef object);
         LoxObjectRef pop();

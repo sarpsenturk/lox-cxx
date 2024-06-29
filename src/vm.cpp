@@ -1,6 +1,7 @@
 #include "vm.h"
 
 #include "vm_instruction.h"
+#include "bytecode.h"
 
 #include "lox_boolean.h"
 #include "lox_nil.h"
@@ -13,49 +14,27 @@
 
 namespace lox
 {
-    void VM::execute(std::span<const std::uint8_t> bytecode)
+    void VM::execute(std::span<const std::uint8_t> code)
     {
-        // Instruction pointer
-        std::size_t isp = 0ull;
-        auto read = [&]() -> std::uint8_t { return bytecode[isp++]; };
-        auto peek = [&]() -> std::uint8_t { return bytecode[isp]; };
-        auto fetch = [&]() -> Instruction { return static_cast<Instruction>(read()); };
-        auto read_number = [&]() -> double {
-            double value;
-            std::memcpy(&value, &bytecode[isp], sizeof(double));
-            isp += sizeof(double);
-            return value;
-        };
-        auto read_string = [&]() -> std::string {
-            std::string string;
-            while (true) {
-                const char c = read();
-                if (c == '\0') {
-                    break;
-                }
-                string.push_back(c);
-            }
-            return string;
-        };
-
+        auto bytecode = Bytecode{code};
         // Extract constants
         constants_.clear();
-        while (peek() == '@') {
-            read(); // consume @
-            const auto index = read();
-            const auto type = read();
+        while (bytecode.peek() == '@') {
+            bytecode.read(); // consume @
+            const auto index = bytecode.read();
+            const auto type = bytecode.read();
             switch (type) {
                 case 'd':
-                    constants_.push_back(std::make_shared<LoxNumber>(read_number()));
+                    constants_.push_back(std::make_shared<LoxNumber>(bytecode.read_number()));
                     break;
                 case 's':
-                    constants_.push_back(std::make_shared<LoxString>(read_string()));
+                    constants_.push_back(std::make_shared<LoxString>(bytecode.read_string()));
                     break;
             }
         }
 
-        while (isp < bytecode.size()) {
-            const auto op = fetch();
+        while (!bytecode.is_eof()) {
+            const auto op = bytecode.fetch();
             switch (op) {
                 case Instruction::Nop:
                     continue;
@@ -78,7 +57,7 @@ namespace lox
                     op_not();
                     break;
                 case Instruction::PushConstant:
-                    op_push_constant(read());
+                    op_push_constant(bytecode.read());
                     break;
                 case Instruction::PushNil:
                     op_push_nil();
