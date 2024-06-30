@@ -1,7 +1,7 @@
 #include "disassembler.h"
 
-#include "vm_instruction.h"
 #include "bytecode.h"
+#include "vm_instruction.h"
 
 #include <fmt/format.h>
 

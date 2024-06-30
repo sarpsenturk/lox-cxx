@@ -27,6 +27,8 @@ namespace lox
                 return "push_true";
             case Instruction::PushFalse:
                 return "push_false";
+            case Instruction::Pop:
+                return "pop";
             case Instruction::Trap:
                 return "trap";
             case Instruction::Print:

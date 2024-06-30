@@ -150,6 +150,7 @@ namespace lox
     void BytecodeCompiler::visit(const ExprStmt& stmt)
     {
         compile(stmt.expr());
+        write_instruction(Instruction::Pop);
     }
 
     void BytecodeCompiler::visit(const PrintStmt& stmt)

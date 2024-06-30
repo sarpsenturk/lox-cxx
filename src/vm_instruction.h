@@ -16,6 +16,7 @@ namespace lox
         PushNil,
         PushTrue,
         PushFalse,
+        Pop,
         Print,
         Trap = UINT8_MAX,
     };
