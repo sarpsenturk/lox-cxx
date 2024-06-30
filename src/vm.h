@@ -27,6 +27,9 @@ namespace lox
         LoxObjectRef pop();
 
     private:
+        [[noreturn]] void throw_unsupported_binary_op(const char* op, const LoxObject* lhs, const LoxObject* rhs) const;
+        [[noreturn]] void throw_unsupported_unary_op(const char* op, const LoxObject* object) const;
+
         void op_add();
         void op_sub();
         void op_mul();

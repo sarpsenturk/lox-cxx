@@ -61,7 +61,7 @@ namespace lox
                 return;
             }
 
-            const auto& bytecode = (*compile_result).bytecode;
+            const auto& bytecode = compile_result->bytecode;
             fmt::print("Generated {} bytes of bytecode:\n", bytecode.size());
             fmt::println("{}", disassemble(bytecode));
 

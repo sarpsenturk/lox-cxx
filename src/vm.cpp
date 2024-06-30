@@ -1,16 +1,33 @@
 #include "vm.h"
 
-#include "vm_instruction.h"
 #include "bytecode.h"
+#include "error.h"
+#include "vm_instruction.h"
 
 #include "lox_boolean.h"
 #include "lox_nil.h"
 #include "lox_number.h"
 #include "lox_string.h"
 
+#include <fmt/format.h>
+
 #include <cassert>
 #include <cstdio>
 #include <cstring>
+
+#define LOX_BINARY_OP(lhs, rhs, op, op_string)                        \
+    auto result = lhs->op(rhs.get());                                 \
+    if (!result) {                                                    \
+        throw_unsupported_binary_op(op_string, lhs.get(), rhs.get()); \
+    }                                                                 \
+    push(std::move(result))
+
+#define LOX_UNARY_OP(object, op, op_string)                  \
+    auto result = object->op();                              \
+    if (!result) {                                           \
+        throw_unsupported_unary_op(op_string, object.get()); \
+    }                                                        \
+    push(std::move(result))
 
 namespace lox
 {
@@ -90,37 +107,47 @@ namespace lox
         return value;
     }
 
+    void VM::throw_unsupported_binary_op(const char* op, const LoxObject* lhs, const LoxObject* rhs) const
+    {
+        throw LoxError(fmt::format("unsupported binary operation {} with types '{}' & '{}'", op, lhs->type_name(), rhs->type_name()), {});
+    }
+
+    void VM::throw_unsupported_unary_op(const char* op, const LoxObject* object) const
+    {
+        throw LoxError(fmt::format("unsupported unary operation {} with type '{}'", op, object->type_name()), {});
+    }
+
     void VM::op_add()
     {
         auto rhs = pop();
         auto lhs = pop();
-        push(lhs->add(rhs.get()));
+        LOX_BINARY_OP(lhs, rhs, add, "add '+'");
     }
 
     void VM::op_sub()
     {
         auto rhs = pop();
         auto lhs = pop();
-        push(lhs->subtract(rhs.get()));
+        LOX_BINARY_OP(lhs, rhs, subtract, "subtract '-'");
     }
 
     void VM::op_mul()
     {
         auto rhs = pop();
         auto lhs = pop();
-        push(lhs->multiply(rhs.get()));
+        LOX_BINARY_OP(lhs, rhs, multiply, "multiply '*'");
     }
 
     void VM::op_div()
     {
         auto rhs = pop();
         auto lhs = pop();
-        push(lhs->divide(rhs.get()));
+        LOX_BINARY_OP(lhs, rhs, divide, "divide '/'");
     }
 
     void VM::op_neg()
     {
-        push(pop()->negate());
+        LOX_UNARY_OP(pop(), negate, "negate '-'");
     }
 
     void VM::op_not()
