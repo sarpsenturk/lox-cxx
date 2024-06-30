@@ -40,6 +40,7 @@ namespace lox
         void op_push_nil();
         void op_push_true();
         void op_push_false();
+        void op_pop();
         void op_print();
 
         std::stack<LoxObjectRef> stack_;

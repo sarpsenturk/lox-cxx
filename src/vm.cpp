@@ -57,40 +57,44 @@ namespace lox
                     continue;
                 case Instruction::Add:
                     op_add();
-                    break;
+                    continue;
                 case Instruction::Sub:
                     op_sub();
-                    break;
+                    continue;
                 case Instruction::Mul:
                     op_mul();
-                    break;
+                    continue;
                 case Instruction::Div:
                     op_div();
-                    break;
+                    continue;
                 case Instruction::Neg:
                     op_neg();
-                    break;
+                    continue;
                 case Instruction::Not:
                     op_not();
-                    break;
+                    continue;
                 case Instruction::PushConstant:
                     op_push_constant(bytecode.read());
-                    break;
+                    continue;
                 case Instruction::PushNil:
                     op_push_nil();
-                    break;
+                    continue;
                 case Instruction::PushTrue:
                     op_push_true();
-                    break;
+                    continue;
                 case Instruction::PushFalse:
                     op_push_false();
-                    break;
+                    continue;
+                case Instruction::Pop:
+                    op_pop();
+                    continue;
                 case Instruction::Print:
                     op_print();
-                    break;
+                    continue;
                 case Instruction::Trap:
                     throw VMTrap();
             }
+            assert(false && "unhandled/invalid bytecode in VM::execute()");
         }
     }
 
@@ -174,6 +178,11 @@ namespace lox
     void VM::op_push_false()
     {
         push(LoxBoolean::false_ref());
+    }
+
+    void VM::op_pop()
+    {
+        pop();
     }
 
     void VM::op_print()
