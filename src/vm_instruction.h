@@ -25,6 +25,7 @@ namespace lox
         GetLocal,
         Jmp,
         JmpFalse,
+        JmpTrue,
         Trap = UINT8_MAX,
     };
 

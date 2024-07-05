@@ -226,7 +226,20 @@ namespace lox
 
     void BytecodeCompiler::visit(const LogicExpr& expr)
     {
-        write_instruction(Instruction::Trap);
+        const auto jmp_type = [op = expr.op().type]() {
+            if (op == TokenType::And) {
+                return Instruction::JmpFalse;
+            }
+            if (op == TokenType::Or) {
+                return Instruction::JmpTrue;
+            }
+            assert(false && "invalid/unhandled logical operator");
+        }();
+        compile(expr.lhs());
+        const auto skip_rhs = start_jump(jmp_type);
+        write_instruction(Instruction::Pop);
+        compile(expr.rhs());
+        patch_jump(skip_rhs);
     }
 
     void BytecodeCompiler::visit(const CallExpr& expr)

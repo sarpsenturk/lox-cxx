@@ -45,6 +45,7 @@ namespace lox
                     break;
                 case Instruction::Jmp:
                 case Instruction::JmpFalse:
+                case Instruction::JmpTrue:
                     result << format_operand(op, bytecode.read_word());
                     break;
                 case Instruction::Nop:

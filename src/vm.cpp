@@ -110,10 +110,15 @@ namespace lox
                     bytecode.jump(bytecode.read_word());
                     continue;
                 case Instruction::JmpFalse:
-                    if (!peek()->is_truthy()) {
-                        bytecode.jump(bytecode.read_word());
+                    if (const auto offset = bytecode.read_word(); !peek()->is_truthy()) {
+                        bytecode.jump(offset);
                     }
-                    continue;;
+                    continue;
+                case Instruction::JmpTrue:
+                    if (const auto offset = bytecode.read_word(); peek()->is_truthy()) {
+                        bytecode.jump(offset);
+                    }
+                    continue;
                 case Instruction::Trap:
                     throw VMTrap();
             }

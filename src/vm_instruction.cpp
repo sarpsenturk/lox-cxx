@@ -47,6 +47,8 @@ namespace lox
                 return "jmp";
             case Instruction::JmpFalse:
                 return "jmp_false";
+            case Instruction::JmpTrue:
+                return "jmp_true";
         }
     }
 } // namespace lox
