@@ -6,6 +6,9 @@
 #include <tl/expected.hpp>
 
 #include <cstdint>
+#include <map>
+#include <span>
+#include <string>
 #include <vector>
 
 namespace lox
@@ -15,6 +18,7 @@ namespace lox
     };
 
     struct CompileError {
+        std::string message;
     };
 
     using CompileResult = tl::expected<CompileOutput, CompileError>;
@@ -49,10 +53,17 @@ namespace lox
     private:
         void write_instruction(Instruction instruction);
         void write_instruction(Instruction, std::uint8_t operand);
-        void add_constant(double number);
+        std::uint8_t add_constant(std::uint8_t type, std::span<const std::uint8_t> bytes);
+        std::uint8_t constant_string(const StringLiteral& string);
+        std::uint8_t constant_number(const NumberLiteral& number);
 
         std::vector<std::uint8_t> code_;
+
         std::vector<std::uint8_t> constants_;
         std::uint8_t constant_index_ = 0;
+        std::map<std::string, std::uint8_t> strings_;
+        std::map<double, std::uint8_t> numbers_;
+
+        std::map<std::string, std::uint8_t, std::less<>> globals_;
     };
 } // namespace lox

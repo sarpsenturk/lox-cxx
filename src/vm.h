@@ -3,8 +3,10 @@
 #include "error.h"
 #include "lox_object.h"
 
+#include <map>
 #include <span>
 #include <stack>
+#include <string>
 #include <vector>
 
 namespace lox
@@ -25,10 +27,14 @@ namespace lox
 
         void push(LoxObjectRef object);
         LoxObjectRef pop();
+        LoxObjectRef peek() const;
 
     private:
         [[noreturn]] void throw_unsupported_binary_op(const char* op, const LoxObject* lhs, const LoxObject* rhs) const;
         [[noreturn]] void throw_unsupported_unary_op(const char* op, const LoxObject* object) const;
+        [[noreturn]] void throw_undefined_global(const std::string& identifier) const;
+
+        [[nodiscard]] SourceLocation current_location() const { return {}; }
 
         void op_add();
         void op_sub();
@@ -42,8 +48,12 @@ namespace lox
         void op_push_false();
         void op_pop();
         void op_print();
+        void op_define_global(std::uint8_t index);
+        void op_set_global(std::uint8_t index);
+        void op_load_global(std::uint8_t index);
 
         std::stack<LoxObjectRef> stack_;
         std::vector<LoxObjectRef> constants_;
+        std::map<std::string, LoxObjectRef, std::less<>> globals_;
     };
 } // namespace lox

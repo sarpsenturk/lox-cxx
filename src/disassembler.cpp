@@ -36,6 +36,9 @@ namespace lox
             const auto op = bytecode.fetch();
             switch (op) {
                 case Instruction::PushConstant:
+                case Instruction::DefineGlobal:
+                case Instruction::SetGlobal:
+                case Instruction::LoadGlobal:
                     result << format_operand(op, bytecode.read());
                     break;
                 default:

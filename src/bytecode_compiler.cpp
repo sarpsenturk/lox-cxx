@@ -8,33 +8,6 @@
 
 namespace lox
 {
-    namespace
-    {
-        struct ConstantType {
-            std::uint8_t operator()(NilLiteral) const { return '?'; }
-            std::uint8_t operator()(NumberLiteral) const { return 'd'; }
-            std::uint8_t operator()(const StringLiteral&) const { return 's'; }
-            std::uint8_t operator()(BooleanLiteral) const { return 'b'; }
-        };
-
-        struct ConstantToBytes {
-            std::vector<std::uint8_t> operator()(NilLiteral) const { return {}; }
-            std::vector<std::uint8_t> operator()(NumberLiteral number) const
-            {
-
-                const auto bytes = std::bit_cast<std::array<std::uint8_t, sizeof(NumberLiteral)>>(number);
-                return std::vector<std::uint8_t>{bytes.begin(), bytes.end()};
-            }
-            auto operator()(const StringLiteral& string) const
-            {
-                auto bytes = std::vector<std::uint8_t>{string.begin(), string.end()};
-                bytes.push_back(0);
-                return bytes;
-            }
-            std::vector<std::uint8_t> operator()(BooleanLiteral boolean) const { return {static_cast<std::uint8_t>(boolean)}; }
-        };
-    } // namespace
-
     CompileResult BytecodeCompiler::compile(const std::vector<StmtPtr>& statements)
     {
         try {
@@ -70,6 +43,42 @@ namespace lox
     {
         code_.push_back(static_cast<std::uint8_t>(instruction));
         code_.push_back(operand);
+    }
+
+    std::uint8_t BytecodeCompiler::add_constant(std::uint8_t type, std::span<const std::uint8_t> bytes)
+    {
+        if (constants_.size() >= UINT8_MAX) {
+            throw CompileError("can't have more than 256 constants");
+        }
+        constants_.push_back('@');
+        const auto constant_index = constant_index_++;
+        constants_.push_back(constant_index);
+        constants_.push_back(type);
+        constants_.insert(constants_.end(), bytes.begin(), bytes.end());
+        return constant_index;
+    }
+
+    std::uint8_t BytecodeCompiler::constant_string(const StringLiteral& string)
+    {
+        if (auto iter = strings_.find(string); iter != strings_.end()) {
+            return iter->second;
+        }
+        auto bytes = std::vector<std::uint8_t>{string.begin(), string.end()};
+        bytes.push_back(0);
+        const auto index = add_constant('s', bytes);
+        strings_.insert(std::make_pair(string, index));
+        return index;
+    }
+
+    std::uint8_t BytecodeCompiler::constant_number(const NumberLiteral& number)
+    {
+        if (auto iter = numbers_.find(number); iter != numbers_.end()) {
+            return iter->second;
+        }
+        const auto bytes = std::bit_cast<std::array<std::uint8_t, sizeof(NumberLiteral)>>(number);
+        const auto index = add_constant('d', bytes);
+        numbers_.insert(std::make_pair(number, index));
+        return index;
     }
 
     void BytecodeCompiler::visit(const BinaryExpr& expr)
@@ -116,25 +125,27 @@ namespace lox
             write_instruction(Instruction::PushNil);
         } else if (const auto* boolean = std::get_if<BooleanLiteral>(&expr.literal())) {
             write_instruction(*boolean ? Instruction::PushTrue : Instruction::PushFalse);
-        } else {
-            constants_.push_back('@');
-            const auto constant_index = constant_index_++;
-            constants_.push_back(constant_index);
-            constants_.push_back(std::visit(ConstantType{}, expr.literal()));
-            const auto bytes = std::visit(ConstantToBytes{}, expr.literal());
-            constants_.insert(constants_.end(), bytes.begin(), bytes.end());
-            write_instruction(Instruction::PushConstant, constant_index);
+        } else if (const auto* string = std::get_if<StringLiteral>(&expr.literal())) {
+            const auto index = constant_string(*string);
+            write_instruction(Instruction::PushConstant, index);
+        } else if (const auto* number = std::get_if<NumberLiteral>(&expr.literal())) {
+            const auto index = constant_number(*number);
+            write_instruction(Instruction::PushConstant, index);
         }
     }
 
     void BytecodeCompiler::visit(const VarExpr& expr)
     {
-        write_instruction(Instruction::Trap);
+        const auto global = constant_string(StringLiteral{expr.identifier().lexeme});
+        write_instruction(Instruction::LoadGlobal, global);
     }
 
     void BytecodeCompiler::visit(const AssignmentExpr& expr)
     {
-        write_instruction(Instruction::Trap);
+        compile(expr.value());
+
+        const auto global = constant_string(StringLiteral{expr.identifier().lexeme});
+        write_instruction(Instruction::SetGlobal, global);
     }
 
     void BytecodeCompiler::visit(const LogicExpr& expr)
@@ -161,7 +172,13 @@ namespace lox
 
     void BytecodeCompiler::visit(const VarDeclStmt& stmt)
     {
-        write_instruction(Instruction::Trap);
+        if (const auto* initializer = stmt.initializer()) {
+            compile(*initializer);
+        } else {
+            write_instruction(Instruction::PushNil);
+        }
+        const auto identifier = constant_string(StringLiteral{stmt.identifier().lexeme});
+        write_instruction(Instruction::DefineGlobal, identifier);
     }
 
     void BytecodeCompiler::visit(const FunDeclStmt& stmt)

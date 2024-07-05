@@ -91,6 +91,15 @@ namespace lox
                 case Instruction::Print:
                     op_print();
                     continue;
+                case Instruction::DefineGlobal:
+                    op_define_global(bytecode.read());
+                    continue;
+                case Instruction::SetGlobal:
+                    op_set_global(bytecode.read());
+                    continue;
+                case Instruction::LoadGlobal:
+                    op_load_global(bytecode.read());
+                    continue;
                 case Instruction::Trap:
                     throw VMTrap();
             }
@@ -111,14 +120,25 @@ namespace lox
         return value;
     }
 
+    LoxObjectRef VM::peek() const
+    {
+        assert(!stack_.empty());
+        return stack_.top();
+    }
+
     void VM::throw_unsupported_binary_op(const char* op, const LoxObject* lhs, const LoxObject* rhs) const
     {
-        throw LoxError(fmt::format("unsupported binary operation {} with types '{}' & '{}'", op, lhs->type_name(), rhs->type_name()), {});
+        throw LoxError(fmt::format("unsupported binary operation {} with types '{}' & '{}'", op, lhs->type_name(), rhs->type_name()), current_location());
     }
 
     void VM::throw_unsupported_unary_op(const char* op, const LoxObject* object) const
     {
-        throw LoxError(fmt::format("unsupported unary operation {} with type '{}'", op, object->type_name()), {});
+        throw LoxError(fmt::format("unsupported unary operation {} with type '{}'", op, object->type_name()), current_location());
+    }
+
+    void VM::throw_undefined_global(const std::string& identifier) const
+    {
+        throw LoxError(fmt::format("accessing undefined global '{}'", identifier), current_location());
     }
 
     void VM::op_add()
@@ -188,5 +208,31 @@ namespace lox
     void VM::op_print()
     {
         std::puts(pop()->to_string().c_str());
+    }
+
+    void VM::op_define_global(std::uint8_t index)
+    {
+        const auto identifier = constants_[index];
+        globals_[identifier->to_string()] = pop();
+    }
+
+    void VM::op_set_global(std::uint8_t index)
+    {
+        const auto identifier = constants_[index]->to_string();
+        if (auto iter = globals_.find(identifier); iter != globals_.end()) {
+            iter->second = peek();
+        } else {
+            throw_undefined_global(identifier);
+        }
+    }
+
+    void VM::op_load_global(std::uint8_t index)
+    {
+        const auto identifier = constants_[index]->to_string();
+        if (auto global = globals_.find(identifier); global != globals_.end()) {
+            push(global->second);
+        } else {
+            throw_undefined_global(identifier);
+        }
     }
 } // namespace lox

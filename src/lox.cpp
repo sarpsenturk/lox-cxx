@@ -57,7 +57,7 @@ namespace lox
             auto compiler = BytecodeCompiler{};
             auto compile_result = compiler.compile(statements);
             if (!compile_result) {
-                fmt::println("Failed to compile");
+                fmt::println("Failed to compile to bytecode: {}", compile_result.error().message);
                 return;
             }
 

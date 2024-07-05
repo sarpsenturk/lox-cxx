@@ -33,6 +33,12 @@ namespace lox
                 return "trap";
             case Instruction::Print:
                 return "print";
+            case Instruction::DefineGlobal:
+                return "define_global";
+            case Instruction::SetGlobal:
+                return "set_global";
+            case Instruction::LoadGlobal:
+                return "load_global";
         }
     }
 } // namespace lox

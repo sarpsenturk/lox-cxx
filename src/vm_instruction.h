@@ -18,9 +18,11 @@ namespace lox
         PushFalse,
         Pop,
         Print,
+        DefineGlobal,
+        SetGlobal,
+        LoadGlobal,
         Trap = UINT8_MAX,
     };
 
     const char* format_as(Instruction instruction);
-}
-
+} // namespace lox
