@@ -21,6 +21,11 @@ namespace lox
         return ref;
     }
 
+    LoxObjectRef LoxBoolean::get_ref(bool value)
+    {
+        return value ? true_ref() : false_ref();
+    }
+
     std::optional<bool> LoxBoolean::cmp_equal(const LoxObject* other)
     {
         // TODO: I'm not sure if Lox supports this kind of boolean checking.

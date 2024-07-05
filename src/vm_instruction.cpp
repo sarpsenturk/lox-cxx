@@ -19,6 +19,12 @@ namespace lox
                 return "neg";
             case Instruction::Not:
                 return "not";
+            case Instruction::Less:
+                return "less";
+            case Instruction::Greater:
+                return "greater";
+            case Instruction::Equal:
+                return "equal";
             case Instruction::PushConstant:
                 return "push_constant";
             case Instruction::PushNil:

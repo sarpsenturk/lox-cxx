@@ -166,6 +166,27 @@ namespace lox
             case TokenType::Slash:
                 write_instruction(Instruction::Div);
                 break;
+            case TokenType::BangEqual:
+                write_instruction(Instruction::Equal);
+                write_instruction(Instruction::Not);
+                break;
+            case TokenType::EqualEqual:
+                write_instruction(Instruction::Equal);
+                break;
+            case TokenType::Greater:
+                write_instruction(Instruction::Greater);
+                break;
+            case TokenType::GreaterEqual:
+                write_instruction(Instruction::Less);
+                write_instruction(Instruction::Not);
+                break;
+            case TokenType::Less:
+                write_instruction(Instruction::Less);
+                break;
+            case TokenType::LessEqual:
+                write_instruction(Instruction::Greater);
+                write_instruction(Instruction::Not);
+                break;
         }
     }
 

@@ -11,6 +11,7 @@ namespace lox
 
         static LoxObjectRef true_ref();
         static LoxObjectRef false_ref();
+        static LoxObjectRef get_ref(bool value);
 
         [[nodiscard]] const char* type_name() const override { return "Boolean"; }
         [[nodiscard]] bool is_truthy() const override { return value_; }

@@ -29,6 +29,13 @@
     }                                                        \
     push(std::move(result))
 
+#define LOX_COMPARE(lhs, rhs, comparison, comp_string)    \
+    if (const auto result = lhs->comparison(rhs.get())) { \
+        push(LoxBoolean::get_ref(*result));               \
+        return;                                           \
+    }                                                     \
+    throw_unsupported_binary_op(comp_string, lhs.get(), rhs.get())
+
 namespace lox
 {
     void VM::execute(std::span<const std::uint8_t> code)
@@ -72,6 +79,15 @@ namespace lox
                     continue;
                 case Instruction::Not:
                     op_not();
+                    continue;
+                case Instruction::Less:
+                    op_less();
+                    continue;
+                case Instruction::Greater:
+                    op_greater();
+                    continue;
+                case Instruction::Equal:
+                    op_equal();
                     continue;
                 case Instruction::PushConstant:
                     op_push_constant(bytecode.read());
@@ -197,6 +213,27 @@ namespace lox
     {
         auto object = pop();
         push(std::make_shared<LoxBoolean>(!object->is_truthy()));
+    }
+
+    void VM::op_less()
+    {
+        auto rhs = pop();
+        auto lhs = pop();
+        LOX_COMPARE(lhs, rhs, cmp_less, "less '<'");
+    }
+
+    void VM::op_greater()
+    {
+        auto rhs = pop();
+        auto lhs = pop();
+        LOX_COMPARE(lhs, rhs, cmp_greater, "greater '>'");
+    }
+
+    void VM::op_equal()
+    {
+        auto rhs = pop();
+        auto lhs = pop();
+        LOX_COMPARE(lhs, rhs, cmp_equal, "equal '=='");
     }
 
     void VM::op_push_constant(std::uint8_t index)

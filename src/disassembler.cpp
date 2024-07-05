@@ -55,6 +55,9 @@ namespace lox
                 case Instruction::Div:
                 case Instruction::Neg:
                 case Instruction::Not:
+                case Instruction::Less:
+                case Instruction::Greater:
+                case Instruction::Equal:
                 case Instruction::PushNil:
                 case Instruction::PushTrue:
                 case Instruction::PushFalse:

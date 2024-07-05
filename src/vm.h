@@ -41,6 +41,9 @@ namespace lox
         void op_div();
         void op_neg();
         void op_not();
+        void op_less();
+        void op_greater();
+        void op_equal();
         void op_push_constant(std::uint8_t index);
         void op_push_nil();
         void op_push_true();
