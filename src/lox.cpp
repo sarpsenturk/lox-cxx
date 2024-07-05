@@ -64,7 +64,6 @@ namespace lox
             const auto& bytecode = compile_result->bytecode;
             fmt::print("Generated {} bytes of bytecode:\n", bytecode.size());
             fmt::println("{}", disassemble(bytecode));
-
             vm_.execute(bytecode);
         } catch (const LoxError& error) {
             fmt::println(stderr, "{}", error.what());

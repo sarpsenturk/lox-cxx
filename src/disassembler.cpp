@@ -38,7 +38,9 @@ namespace lox
                 case Instruction::PushConstant:
                 case Instruction::DefineGlobal:
                 case Instruction::SetGlobal:
-                case Instruction::LoadGlobal:
+                case Instruction::GetGlobal:
+                case Instruction::SetLocal:
+                case Instruction::GetLocal:
                     result << format_operand(op, bytecode.read());
                     break;
                 default:

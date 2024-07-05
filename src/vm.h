@@ -5,7 +5,7 @@
 
 #include <map>
 #include <span>
-#include <stack>
+#include <vector>
 #include <string>
 #include <vector>
 
@@ -50,9 +50,11 @@ namespace lox
         void op_print();
         void op_define_global(std::uint8_t index);
         void op_set_global(std::uint8_t index);
-        void op_load_global(std::uint8_t index);
+        void op_get_global(std::uint8_t index);
+        void op_set_local(std::uint8_t index);
+        void op_get_local(std::uint8_t index);
 
-        std::stack<LoxObjectRef> stack_;
+        std::vector<LoxObjectRef> stack_;
         std::vector<LoxObjectRef> constants_;
         std::map<std::string, LoxObjectRef, std::less<>> globals_;
     };

@@ -3,11 +3,34 @@
 #include "token.h"
 #include "vm_instruction.h"
 
+#include <fmt/format.h>
+
+#include <algorithm>
 #include <array>
 #include <bit>
+#include <cassert>
+#include <ranges>
 
 namespace lox
 {
+    namespace
+    {
+        struct Scope {
+            BytecodeCompiler* compiler;
+
+            Scope(BytecodeCompiler* compiler)
+                : compiler(compiler)
+            {
+                compiler->begin_scope();
+            }
+
+            ~Scope()
+            {
+                compiler->end_scope();
+            }
+        };
+    } // namespace
+
     CompileResult BytecodeCompiler::compile(const std::vector<StmtPtr>& statements)
     {
         try {
@@ -81,6 +104,30 @@ namespace lox
         return index;
     }
 
+    void BytecodeCompiler::begin_scope()
+    {
+        scope_depth_ += 1;
+    }
+
+    void BytecodeCompiler::end_scope()
+    {
+        scope_depth_ -= 1;
+        while (!locals_.empty() && locals_.back().depth > scope_depth_) {
+            write_instruction(Instruction::Pop);
+            locals_.pop_back();
+        }
+    }
+
+    int BytecodeCompiler::resolve_local(const Token& identifier)
+    {
+        auto iter = std::ranges::find(std::views::reverse(locals_), identifier.lexeme, &LocalVar::identifier);
+        if (iter == locals_.rend()) {
+            return -1;
+        }
+
+        return static_cast<int>(std::distance(locals_.begin(), iter.base()) - 1);
+    }
+
     void BytecodeCompiler::visit(const BinaryExpr& expr)
     {
         compile(expr.lhs());
@@ -136,16 +183,24 @@ namespace lox
 
     void BytecodeCompiler::visit(const VarExpr& expr)
     {
-        const auto global = constant_string(StringLiteral{expr.identifier().lexeme});
-        write_instruction(Instruction::LoadGlobal, global);
+        if (auto local = resolve_local(expr.identifier()); local != -1) {
+            write_instruction(Instruction::GetLocal, local);
+        } else {
+            const auto global = constant_string(StringLiteral{expr.identifier().lexeme});
+            write_instruction(Instruction::GetGlobal, global);
+        }
     }
 
     void BytecodeCompiler::visit(const AssignmentExpr& expr)
     {
         compile(expr.value());
 
-        const auto global = constant_string(StringLiteral{expr.identifier().lexeme});
-        write_instruction(Instruction::SetGlobal, global);
+        if (auto local = resolve_local(expr.identifier()); local != -1) {
+            write_instruction(Instruction::SetLocal, local);
+        } else {
+            const auto global = constant_string(StringLiteral{expr.identifier().lexeme});
+            write_instruction(Instruction::SetGlobal, global);
+        }
     }
 
     void BytecodeCompiler::visit(const LogicExpr& expr)
@@ -172,13 +227,30 @@ namespace lox
 
     void BytecodeCompiler::visit(const VarDeclStmt& stmt)
     {
+        if (scope_depth_ > 0) {
+            for (auto iter = locals_.rbegin(); iter != locals_.rend(); ++iter) {
+                if (iter->depth != -1 && iter->depth < scope_depth_) {
+                    break;
+                }
+                if (stmt.identifier().lexeme == iter->identifier && iter->depth == scope_depth_) {
+                    throw CompileError(fmt::format("redefinition of local variable '{}' is not allowed", iter->identifier));
+                }
+            }
+            locals_.emplace_back(std::string{stmt.identifier().lexeme}, -1); // Mark uninitialized
+        }
+
         if (const auto* initializer = stmt.initializer()) {
             compile(*initializer);
         } else {
             write_instruction(Instruction::PushNil);
         }
-        const auto identifier = constant_string(StringLiteral{stmt.identifier().lexeme});
-        write_instruction(Instruction::DefineGlobal, identifier);
+
+        if (scope_depth_ > 0) {
+            locals_.back().depth = scope_depth_; // Mark initialized
+        } else {
+            const auto name = constant_string(StringLiteral{stmt.identifier().lexeme});
+            write_instruction(Instruction::DefineGlobal, name);
+        }
     }
 
     void BytecodeCompiler::visit(const FunDeclStmt& stmt)
@@ -188,7 +260,10 @@ namespace lox
 
     void BytecodeCompiler::visit(const BlockStmt& stmt)
     {
-        write_instruction(Instruction::Trap);
+        const auto scope = Scope{this};
+        for (const auto& statement : stmt.statements()) {
+            compile(*statement);
+        }
     }
 
     void BytecodeCompiler::visit(const IfStmt& stmt)

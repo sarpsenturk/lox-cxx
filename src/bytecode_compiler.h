@@ -50,12 +50,16 @@ namespace lox
         void visit(const WhileStmt& stmt) override;
         void visit(const ReturnStmt& stmt) override;
 
+        void begin_scope();
+        void end_scope();
+
     private:
         void write_instruction(Instruction instruction);
         void write_instruction(Instruction, std::uint8_t operand);
         std::uint8_t add_constant(std::uint8_t type, std::span<const std::uint8_t> bytes);
         std::uint8_t constant_string(const StringLiteral& string);
         std::uint8_t constant_number(const NumberLiteral& number);
+        int resolve_local(const Token& identifier);
 
         std::vector<std::uint8_t> code_;
 
@@ -65,5 +69,13 @@ namespace lox
         std::map<double, std::uint8_t> numbers_;
 
         std::map<std::string, std::uint8_t, std::less<>> globals_;
+
+        struct LocalVar {
+            std::string identifier;
+            int depth;
+        };
+
+        std::vector<LocalVar> locals_;
+        int scope_depth_ = 0;
     };
 } // namespace lox

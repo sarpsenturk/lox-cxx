@@ -37,8 +37,12 @@ namespace lox
                 return "define_global";
             case Instruction::SetGlobal:
                 return "set_global";
-            case Instruction::LoadGlobal:
+            case Instruction::GetGlobal:
                 return "load_global";
+            case Instruction::SetLocal:
+                return "set_local";
+            case Instruction::GetLocal:
+                return "get_local";
         }
     }
 } // namespace lox

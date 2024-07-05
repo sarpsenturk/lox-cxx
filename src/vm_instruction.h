@@ -20,7 +20,9 @@ namespace lox
         Print,
         DefineGlobal,
         SetGlobal,
-        LoadGlobal,
+        GetGlobal,
+        SetLocal,
+        GetLocal,
         Trap = UINT8_MAX,
     };
 

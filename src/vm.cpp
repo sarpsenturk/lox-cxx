@@ -97,8 +97,14 @@ namespace lox
                 case Instruction::SetGlobal:
                     op_set_global(bytecode.read());
                     continue;
-                case Instruction::LoadGlobal:
-                    op_load_global(bytecode.read());
+                case Instruction::GetGlobal:
+                    op_get_global(bytecode.read());
+                    continue;
+                case Instruction::SetLocal:
+                    op_set_local(bytecode.read());
+                    continue;
+                case Instruction::GetLocal:
+                    op_get_local(bytecode.read());
                     continue;
                 case Instruction::Trap:
                     throw VMTrap();
@@ -109,21 +115,21 @@ namespace lox
 
     void VM::push(LoxObjectRef object)
     {
-        stack_.push(std::move(object));
+        stack_.push_back(std::move(object));
     }
 
     LoxObjectRef VM::pop()
     {
         assert(!stack_.empty());
-        auto value = std::move(stack_.top());
-        stack_.pop();
+        auto value = std::move(stack_.back());
+        stack_.pop_back();
         return value;
     }
 
     LoxObjectRef VM::peek() const
     {
         assert(!stack_.empty());
-        return stack_.top();
+        return stack_.back();
     }
 
     void VM::throw_unsupported_binary_op(const char* op, const LoxObject* lhs, const LoxObject* rhs) const
@@ -226,7 +232,7 @@ namespace lox
         }
     }
 
-    void VM::op_load_global(std::uint8_t index)
+    void VM::op_get_global(std::uint8_t index)
     {
         const auto identifier = constants_[index]->to_string();
         if (auto global = globals_.find(identifier); global != globals_.end()) {
@@ -234,5 +240,17 @@ namespace lox
         } else {
             throw_undefined_global(identifier);
         }
+    }
+
+    void VM::op_set_local(std::uint8_t index)
+    {
+        assert(stack_.size() > index && "incorrect stack address for local");
+        stack_[index] = peek();
+    }
+
+    void VM::op_get_local(std::uint8_t index)
+    {
+        assert(stack_.size() > index && "incorrect stack address for local");
+        push(stack_[index]);
     }
 } // namespace lox
