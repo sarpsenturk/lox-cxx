@@ -15,6 +15,15 @@ namespace lox
         return bytecode_[isp_++];
     }
 
+    std::uint16_t Bytecode::read_word()
+    {
+        assert(!is_eof());
+        std::uint16_t word;
+        std::memcpy(&word, &bytecode_[isp_], sizeof(word));
+        isp_ += sizeof(word);
+        return word;
+    }
+
     std::uint8_t Bytecode::peek() const
     {
         assert(!is_eof());
@@ -45,5 +54,11 @@ namespace lox
             string.push_back(c);
         }
         return string;
+    }
+
+    void Bytecode::jump(std::uint16_t offset)
+    {
+        assert(isp_ + offset <= bytecode_.size());
+        isp_ += offset;
     }
 } // namespace lox

@@ -68,6 +68,27 @@ namespace lox
         code_.push_back(operand);
     }
 
+    void BytecodeCompiler::write_instruction(Instruction instruction, std::uint8_t operand1, std::uint8_t operand2)
+    {
+        code_.push_back(static_cast<std::uint8_t>(instruction));
+        code_.push_back(operand1);
+        code_.push_back(operand2);
+    }
+
+    std::size_t BytecodeCompiler::start_jump(Instruction jmp_instruction)
+    {
+        write_instruction(jmp_instruction, 0xff, 0xff);
+        return code_.size() - 2; // return offset to first byte of jump address
+    }
+
+    void BytecodeCompiler::patch_jump(std::size_t offset)
+    {
+        const auto jump_size = code_.size() - offset - 2;
+        assert(jump_size <= UINT16_MAX);
+        const auto jump_u16 = static_cast<std::uint16_t>(jump_size);
+        std::memcpy(&code_[offset], &jump_u16, sizeof(jump_u16));
+    }
+
     std::uint8_t BytecodeCompiler::add_constant(std::uint8_t type, std::span<const std::uint8_t> bytes)
     {
         if (constants_.size() >= UINT8_MAX) {
@@ -268,7 +289,18 @@ namespace lox
 
     void BytecodeCompiler::visit(const IfStmt& stmt)
     {
-        write_instruction(Instruction::Trap);
+        compile(stmt.condition());
+
+        const auto skip_then = start_jump(Instruction::JmpFalse);
+        write_instruction(Instruction::Pop);
+        compile(stmt.then_branch());
+        const auto skip_else = start_jump(Instruction::Jmp);
+        write_instruction(Instruction::Pop);
+        patch_jump(skip_then);
+        if (const auto* else_branch = stmt.else_branch()) {
+            compile(*else_branch);
+        }
+        patch_jump(skip_else);
     }
 
     void BytecodeCompiler::visit(const WhileStmt& stmt)

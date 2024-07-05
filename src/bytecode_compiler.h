@@ -55,7 +55,11 @@ namespace lox
 
     private:
         void write_instruction(Instruction instruction);
-        void write_instruction(Instruction, std::uint8_t operand);
+        void write_instruction(Instruction instruction, std::uint8_t operand);
+        void write_instruction(Instruction instruction, std::uint8_t operand1, std::uint8_t operand2);
+        std::size_t start_jump(Instruction jmp_instruction);
+        void patch_jump(std::size_t offset);
+
         std::uint8_t add_constant(std::uint8_t type, std::span<const std::uint8_t> bytes);
         std::uint8_t constant_string(const StringLiteral& string);
         std::uint8_t constant_number(const NumberLiteral& number);

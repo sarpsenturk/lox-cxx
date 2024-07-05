@@ -106,6 +106,14 @@ namespace lox
                 case Instruction::GetLocal:
                     op_get_local(bytecode.read());
                     continue;
+                case Instruction::Jmp:
+                    bytecode.jump(bytecode.read_word());
+                    continue;
+                case Instruction::JmpFalse:
+                    if (!peek()->is_truthy()) {
+                        bytecode.jump(bytecode.read_word());
+                    }
+                    continue;;
                 case Instruction::Trap:
                     throw VMTrap();
             }

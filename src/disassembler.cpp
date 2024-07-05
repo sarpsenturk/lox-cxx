@@ -30,7 +30,7 @@ namespace lox
         }
 
         auto format_default = [](Instruction instruction) { return fmt::format("{}\n", instruction); };
-        auto format_operand = [](Instruction instruction, std::uint8_t operand) { return fmt::format("{} {}\n", instruction, operand); };
+        auto format_operand = [](Instruction instruction, auto operand) { return fmt::format("{} {}\n", instruction, operand); };
 
         while (!bytecode.is_eof()) {
             const auto op = bytecode.fetch();
@@ -43,7 +43,23 @@ namespace lox
                 case Instruction::GetLocal:
                     result << format_operand(op, bytecode.read());
                     break;
-                default:
+                case Instruction::Jmp:
+                case Instruction::JmpFalse:
+                    result << format_operand(op, bytecode.read_word());
+                    break;
+                case Instruction::Nop:
+                case Instruction::Add:
+                case Instruction::Sub:
+                case Instruction::Mul:
+                case Instruction::Div:
+                case Instruction::Neg:
+                case Instruction::Not:
+                case Instruction::PushNil:
+                case Instruction::PushTrue:
+                case Instruction::PushFalse:
+                case Instruction::Pop:
+                case Instruction::Print:
+                case Instruction::Trap:
                     result << format_default(op);
                     break;
             }

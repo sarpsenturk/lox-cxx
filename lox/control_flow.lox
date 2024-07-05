@@ -1,0 +1,7 @@
+if (!nil) {
+    print "yes";
+} else {
+    print "no";
+}
+
+print "cool";

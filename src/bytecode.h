@@ -14,10 +14,14 @@ namespace lox
         explicit Bytecode(std::span<const std::uint8_t> bytecode);
 
         std::uint8_t read();
+        std::uint16_t read_word();
         [[nodiscard]] std::uint8_t peek() const;
         Instruction fetch();
         double read_number();
         std::string read_string();
+
+        void jump(std::uint16_t offset);
+
         [[nodiscard]] bool is_eof() const { return isp_ >= bytecode_.size(); }
 
     private:

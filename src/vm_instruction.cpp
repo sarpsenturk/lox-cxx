@@ -43,6 +43,10 @@ namespace lox
                 return "set_local";
             case Instruction::GetLocal:
                 return "get_local";
+            case Instruction::Jmp:
+                return "jmp";
+            case Instruction::JmpFalse:
+                return "jmp_false";
         }
     }
 } // namespace lox
