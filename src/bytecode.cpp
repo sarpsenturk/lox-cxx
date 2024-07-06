@@ -1,6 +1,8 @@
 #include "bytecode.h"
 
 #include <cassert>
+#include <cstdint>
+#include <cstring>
 
 namespace lox
 {
@@ -19,6 +21,15 @@ namespace lox
     {
         assert(!is_eof());
         std::uint16_t word;
+        std::memcpy(&word, &bytecode_[isp_], sizeof(word));
+        isp_ += sizeof(word);
+        return word;
+    }
+
+    std::int16_t Bytecode::read_signed_word()
+    {
+        assert(!is_eof());
+        std::int16_t word;
         std::memcpy(&word, &bytecode_[isp_], sizeof(word));
         isp_ += sizeof(word);
         return word;
@@ -60,5 +71,11 @@ namespace lox
     {
         assert(isp_ + offset <= bytecode_.size());
         isp_ += offset;
+    }
+
+    void Bytecode::jump_signed(std::int16_t offset)
+    {
+        isp_ += offset;
+        assert(isp_ >= 0 && isp_ <= bytecode_.size());
     }
 } // namespace lox

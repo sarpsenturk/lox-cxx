@@ -29,6 +29,7 @@ add_library(
 )
 target_compile_features(lox PUBLIC cxx_std_20)
 target_include_directories(lox PUBLIC src)
+set_target_properties(lox PROPERTIES CXX_STANDARD_REQUIRED ON)
 
 find_package(fmt CONFIG REQUIRED)
 find_package(tl-expected CONFIG REQUIRED)

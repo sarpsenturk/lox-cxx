@@ -1,0 +1,12 @@
+print "while loops are awesome";
+var x = 0;
+while (x < 10) {
+    print x;
+    x = x + 1;
+}
+
+print "for loops are cool too";
+for (var i = 0; i < 10; i = i + 1) {
+    print i;
+}
+

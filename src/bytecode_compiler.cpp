@@ -89,10 +89,20 @@ namespace lox
         std::memcpy(&code_[offset], &jump_u16, sizeof(jump_u16));
     }
 
+    void BytecodeCompiler::do_loop(std::size_t loop_start)
+    {
+        write_instruction(Instruction::JmpSigned);
+        const auto offset = static_cast<std::int64_t>(code_.size()) - loop_start + 2;
+        assert(std::cmp_less(offset, INT16_MAX));
+        code_.resize(code_.size() + 2);
+        const auto jump_i16 = -static_cast<std::int16_t>(offset);
+        std::memcpy(&code_[code_.size() - 2], &jump_i16, sizeof(jump_i16));
+    }
+
     std::uint8_t BytecodeCompiler::add_constant(std::uint8_t type, std::span<const std::uint8_t> bytes)
     {
         if (constants_.size() >= UINT8_MAX) {
-            throw CompileError("can't have more than 256 constants");
+            throw CompileError{"can't have more than 256 constants"};
         }
         constants_.push_back('@');
         const auto constant_index = constant_index_++;
@@ -288,10 +298,10 @@ namespace lox
                     break;
                 }
                 if (stmt.identifier().lexeme == iter->identifier && iter->depth == scope_depth_) {
-                    throw CompileError(fmt::format("redefinition of local variable '{}' is not allowed", iter->identifier));
+                    throw CompileError{fmt::format("redefinition of local variable '{}' is not allowed", iter->identifier)};
                 }
             }
-            locals_.emplace_back(std::string{stmt.identifier().lexeme}, -1); // Mark uninitialized
+            locals_.push_back({std::string{stmt.identifier().lexeme}, -1}); // Mark uninitialized
         }
 
         if (const auto* initializer = stmt.initializer()) {
@@ -339,7 +349,14 @@ namespace lox
 
     void BytecodeCompiler::visit(const WhileStmt& stmt)
     {
-        write_instruction(Instruction::Trap);
+        const auto loop_start = code_.size();
+        compile(stmt.condition());
+        const auto loop_exit = start_jump(Instruction::JmpFalse);
+        write_instruction(Instruction::Pop);
+        compile(stmt.body());
+        do_loop(loop_start);
+        patch_jump(loop_exit);
+        write_instruction(Instruction::Pop);
     }
 
     void BytecodeCompiler::visit(const ReturnStmt& stmt)

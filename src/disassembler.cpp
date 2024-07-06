@@ -48,6 +48,9 @@ namespace lox
                 case Instruction::JmpTrue:
                     result << format_operand(op, bytecode.read_word());
                     break;
+                case Instruction::JmpSigned:
+                    result << format_operand(op, bytecode.read_signed_word());
+                    break;
                 case Instruction::Nop:
                 case Instruction::Add:
                 case Instruction::Sub:

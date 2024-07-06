@@ -135,6 +135,9 @@ namespace lox
                         bytecode.jump(offset);
                     }
                     continue;
+                case Instruction::JmpSigned:
+                    bytecode.jump_signed(bytecode.read_signed_word());
+                    continue;
                 case Instruction::Trap:
                     throw VMTrap();
             }

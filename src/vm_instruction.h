@@ -29,6 +29,7 @@ namespace lox
         Jmp,
         JmpFalse,
         JmpTrue,
+        JmpSigned,
         Trap = UINT8_MAX,
     };
 
